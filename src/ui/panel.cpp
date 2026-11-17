@@ -189,7 +189,9 @@ const char* factoryCabName(int set) {
     case 0: return "1×15";
     case 1: return "4×10";
     case 2: return "2×12";
-    default: return "8×10";
+    case 3: return "8×10";
+    case 4: return "2×10";
+    default: return "1×12";
   }
 }
 
@@ -198,7 +200,9 @@ const char* factoryCabSubtitle(int set) {
     case 0: return "warm vintage · round low end";
     case 1: return "tight punch · fast midrange";
     case 2: return "warm and wide · classic rock";
-    default: return "big stack · deep and bright";
+    case 3: return "big stack · deep and bright";
+    case 4: return "tight punch · fast midrange";
+    default: return "warm and focused · studio";
   }
 }
 
@@ -206,18 +210,18 @@ const char* cabName(int, int cab, int cabSet) {
   if (cab == 1) {
     return "User IR";
   }
-  return factoryCabName(std::min(std::max(cabSet, 0), 3));
+  return factoryCabName(std::min(std::max(cabSet, 0), 5));
 }
 
 const char* cabSubtitle(int, int cab, int cabSet) {
   if (cab == 1) {
     return "user impulse response · factory fallback";
   }
-  return factoryCabSubtitle(std::min(std::max(cabSet, 0), 3));
+  return factoryCabSubtitle(std::min(std::max(cabSet, 0), 5));
 }
 
 int cabSetFrom(const Shared& shared) {
-  return std::min(std::max(static_cast<int>(std::lround(shared.get(P_CAB_SET))), 0), 3);
+  return std::min(std::max(static_cast<int>(std::lround(shared.get(P_CAB_SET))), 0), 5);
 }
 
 const char* modelName(int model) {
@@ -552,8 +556,8 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     button(P_CAB, 60, 200, 110, 28, 0.0, "FACTORY");
     button(P_CAB, 180, 200, 110, 28, 1.0, "USER");
 
-    for (int i = 0; i < 4; ++i) {
-      button(P_CAB_SET, 513, 300 + i * 38, 180, 30, i,
+    for (int i = 0; i < 6; ++i) {
+      button(P_CAB_SET, 513, 300 + i * 34, 180, 28, i,
              kParamSpecs[P_CAB_SET].labels.names[i]);
     }
 

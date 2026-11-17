@@ -102,7 +102,7 @@ inline constexpr const char* kModelLabels[] = {
     "Studio DI", "Flip Top", "SVT", "Modern"};
 inline constexpr const char* kCabLabels[] = {"Factory", "User"};
 inline constexpr const char* kCabSetLabels[] = {
-    "1×15", "4×10", "2×12", "8×10"};
+    "1×15", "4×10", "2×12", "8×10", "2×10", "1×12"};
 inline constexpr const char* kCabMicLabels[] = {"Dynamic", "Ribbon", "Blend"};
 
 inline constexpr ParamSpec kParamSpecs[P_COUNT] = {
@@ -168,7 +168,7 @@ inline constexpr ParamSpec kParamSpecs[P_COUNT] = {
      false, nullptr, {}},
     {"gate_decay", "Gate Decay", "Gate", 0.0, 1.0, 0.4, false, false, false,
      nullptr, {}},
-    {"cab_set", "Cabinet", "Cab", 0.0, 3.0, 3.0, true, false, false, nullptr,
+    {"cab_set", "Cabinet", "Cab", 0.0, 5.0, 3.0, true, false, false, nullptr,
      labels(kCabSetLabels)},
     {"oct_on", "Octave", "Octave", 0.0, 1.0, 0.0, true, false, true, nullptr, {}},
     {"oct_level", "Octave", "Octave", 0.0, 1.0, 0.35, false, false, false,

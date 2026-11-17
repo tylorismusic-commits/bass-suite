@@ -110,7 +110,7 @@ int main() {
   state.page = 2;
   panel.draw(cr, shared, state);
   rects = panel.widgetRects();
-  if (countParam(rects, bass::P_CAB_SET) != 4 || !hasParam(rects, bass::P_CAB_MIC) ||
+  if (countParam(rects, bass::P_CAB_SET) != 6 || !hasParam(rects, bass::P_CAB_MIC) ||
       !hasParam(rects, bass::P_CAB_LEVEL)) {
     std::fprintf(stderr, "cab page is missing controls\n");
     return 1;

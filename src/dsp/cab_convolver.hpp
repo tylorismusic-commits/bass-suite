@@ -111,12 +111,14 @@ public:
     FourByTen = 1,
     TwoByTwelve = 2,
     EightByTen = 3,
-    Count = 4
+    TwoByTen = 4,
+    OneByTwelve = 5,
+    Count = 6
   };
 
   bool load(const std::string& dir, float sampleRate) noexcept {
     static const char* const names[Count] = {
-        "1x15", "4x10", "2x12", "8x10"};
+        "1x15", "4x10", "2x12", "8x10", "2x10", "1x12"};
     static const char* const mics[3] = {"57", "121", "blend"};
     const int targetRate = static_cast<int>(std::lround(sampleRate));
     const bool prefer96 = sampleRate >= 72000.0f;
