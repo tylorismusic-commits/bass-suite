@@ -343,8 +343,14 @@ public:
     float inPeakR = 0.0f;
     float power = 0.0f;
     for (int i = 0; i < frames; ++i) {
-      const float l = left[i];
-      const float r = right[i];
+      const float l = std::isfinite(left[i])
+                          ? std::clamp(left[i], -32.0f, 32.0f)
+                          : 0.0f;
+      const float r = std::isfinite(right[i])
+                          ? std::clamp(right[i], -32.0f, 32.0f)
+                          : 0.0f;
+      left[i] = l;
+      right[i] = r;
       inPeakL = std::max(inPeakL, std::fabs(l));
       inPeakR = std::max(inPeakR, std::fabs(r));
       power += 0.5f * (l * l + r * r);
@@ -375,8 +381,12 @@ public:
 
     // Input trim and 808, then the NAM block.
     for (int i = 0; i < frames; ++i) {
-      float dryL = left[i];
-      float dryR = right[i];
+      float dryL = std::isfinite(left[i])
+                       ? std::clamp(left[i], -32.0f, 32.0f)
+                       : 0.0f;
+      float dryR = std::isfinite(right[i])
+                       ? std::clamp(right[i], -32.0f, 32.0f)
+                       : 0.0f;
       inPeakL = std::max(inPeakL, std::fabs(dryL));
       inPeakR = std::max(inPeakR, std::fabs(dryR));
       // During the silent hold, drive the DSP with zero so the old model's
@@ -455,6 +465,10 @@ public:
       const float outGain = dbToGain((out - 0.5f) * 24.0f);
       l *= outGain;
       r *= outGain;
+      if (!std::isfinite(l) || !std::isfinite(r)) {
+        l = 0.0f;
+        r = 0.0f;
+      }
       if (c.limiterOn) {
         const float thresh = dbToGain(-24.0f + 24.0f * c.limiterThreshold);
         const float peakNow = std::max(std::fabs(l), std::fabs(r));
@@ -505,8 +519,12 @@ public:
 
 
     for (int i = 0; i < frames; ++i) {
-      float dryL = left[i];
-      float dryR = right[i];
+      float dryL = std::isfinite(left[i])
+                       ? std::clamp(left[i], -32.0f, 32.0f)
+                       : 0.0f;
+      float dryR = std::isfinite(right[i])
+                       ? std::clamp(right[i], -32.0f, 32.0f)
+                       : 0.0f;
       inPeakL = std::max(inPeakL, std::fabs(dryL));
       inPeakR = std::max(inPeakR, std::fabs(dryR));
       // During the silent hold, drive the DSP with zero so the old model's
@@ -719,6 +737,10 @@ public:
       l *= switchGain_;
       r *= switchGain_;
 
+      if (!std::isfinite(l) || !std::isfinite(r)) {
+        l = 0.0f;
+        r = 0.0f;
+      }
       if (c.limiterOn) {
         const float thresh = dbToGain(-24.0f + 24.0f * c.limiterThreshold);
         const float peakNow = std::max(std::fabs(l), std::fabs(r));

@@ -79,6 +79,41 @@ int main() {
   ir[0] += 2.0f;
   writeWav(dir + "/Test Cabinet.wav", ir, 48000);
 
+  // A malformed WAV whose blockAlign is smaller than one frame must be
+  // rejected instead of reading past the data chunk.
+  {
+    std::ofstream bad(dir + "-malformed.wav", std::ios::binary);
+    const uint32_t riff = 36u + 32u;
+    const uint32_t fmtSize = 16u;
+    const uint16_t format = 1, channels = 2, bits = 16;
+    const uint16_t blockAlign = 1;
+    const uint32_t rate = 48000;
+    const uint32_t byteRate = rate * channels * bits / 8;
+    const uint32_t dataSize = 32;
+    bad.write("RIFF", 4);
+    bad.write(reinterpret_cast<const char*>(&riff), 4);
+    bad.write("WAVEfmt ", 8);
+    bad.write(reinterpret_cast<const char*>(&fmtSize), 4);
+    bad.write(reinterpret_cast<const char*>(&format), 2);
+    bad.write(reinterpret_cast<const char*>(&channels), 2);
+    bad.write(reinterpret_cast<const char*>(&rate), 4);
+    bad.write(reinterpret_cast<const char*>(&byteRate), 4);
+    bad.write(reinterpret_cast<const char*>(&blockAlign), 2);
+    bad.write(reinterpret_cast<const char*>(&bits), 2);
+    bad.write("data", 4);
+    bad.write(reinterpret_cast<const char*>(&dataSize), 4);
+    for (int i = 0; i < 16; ++i) {
+      const int16_t z = 0;
+      bad.write(reinterpret_cast<const char*>(&z), 2);
+    }
+    std::vector<float> badOut;
+    if (bass::readWavMono(dir + "-malformed.wav", badOut, 48000)) {
+      std::fprintf(stderr, "malformed WAV was accepted\n");
+      return 1;
+    }
+    std::filesystem::remove(dir + "-malformed.wav", ec);
+  }
+
   bass::UserIrLibrary library;
   library.start(dir, 48000.0f);
   library.rescanNow();
@@ -98,9 +133,9 @@ int main() {
   engine.prepare(48000.0f);
   engine.setUserIrBank(library.bank());
   bass::Controls controls;
-  controls.model = 4;
-  controls.cab = 2;
-  controls.userIr[4] = 1;
+  controls.model = 1;
+  controls.cab = 1;
+  controls.userIr[1] = 1;
   engine.setControls(controls);
 
   std::vector<float> left(512, 0.0f);

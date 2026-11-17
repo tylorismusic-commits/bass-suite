@@ -322,7 +322,7 @@ LV2_State_Status stateRestore(LV2_Handle handle,
     std::memcpy(&header, ptr, sizeof(header));
     ptr += sizeof(header);
     size_t remaining = size - sizeof(header);
-    if (header.version == 1u && header.count <= 7u) {
+    if (header.version == 1u && header.count <= 4u) {
       for (uint32_t i = 0; i < header.count; ++i) {
         uint32_t amp = 0;
         uint32_t nameLen = 0;
@@ -335,7 +335,7 @@ LV2_State_Status stateRestore(LV2_Handle handle,
         std::memcpy(&nameLen, ptr, sizeof(nameLen));
         ptr += sizeof(nameLen);
         remaining -= sizeof(amp) + sizeof(nameLen);
-        if (amp >= 7u || nameLen > 1024u || remaining < nameLen) {
+        if (amp >= 4u || nameLen > 1024u || remaining < nameLen) {
           break;
         }
         std::string name(reinterpret_cast<const char*>(ptr), nameLen);

@@ -16,4 +16,7 @@
   Synth Bass. Levels matched on synthetic and real bass loops.
 - Removed the unused Amp Suite delay/reverb engine and the guitar-only
   parameters; moved atomic shared-pointer handoff to C++20.
+- Bug-catching pass: non-finite input sanitization; malformed WAV rejection;
+  user-IR state slot bounds; NAM FIFO preallocation on the audio thread; UI
+  NAM/amp and user-IR/cab state fixes.
 - Tests: DSP, panel, layout, geometry, TTL, CLAP and LV2 host tests.

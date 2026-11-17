@@ -667,11 +667,11 @@ bool Panel::pointerDown(Shared& shared, PanelState& state, double x, double y,
         std::min(std::max(static_cast<int>(shared.get(P_MODEL) + 0.5), 0), 3);
     if (row == 0) {
       shared.set(P_USER_IR_0 + model, 0.0);
-      shared.set(P_CAB, 2.0);
+      shared.set(P_CAB, 0.0);
       markEdited(state);
     } else if (row >= 1 && row <= files) {
       shared.set(P_USER_IR_0 + model, static_cast<double>(row));
-      shared.set(P_CAB, 2.0);
+      shared.set(P_CAB, 1.0);
       markEdited(state);
     } else {
       openFileBrowser(state);
@@ -705,6 +705,7 @@ bool Panel::pointerDown(Shared& shared, PanelState& state, double x, double y,
       case Kind::ModelTab: {
         const int model = static_cast<int>(w.value);
         shared.set(P_MODEL, w.value);
+        shared.set(P_NAM_ON, 0.0);
         // Sensible cab defaults when auditioning amps; the Cab page can
         // override them immediately.
         if (model == 0) {
@@ -890,7 +891,7 @@ void Panel::tick(const Shared& shared, PanelState& state) const {
     state.userIrScanTicks = 0;
     state.userIrs = listUserIrFiles(userIrDir());
     const int rows = static_cast<int>(state.userIrs.size()) + 1;
-    const int maxScroll = std::max(0, rows - 7);
+    const int maxScroll = std::max(0, rows - kUserRows);
     state.userIrScroll =
         std::min(std::max(state.userIrScroll, 0), maxScroll);
   }
@@ -1980,7 +1981,7 @@ bool Panel::importUserIr(Shared& shared, PanelState& state,
   }
   const int model =
       std::min(std::max(static_cast<int>(shared.get(P_MODEL) + 0.5), 0), 3);
-  shared.set(P_CAB, 2.0);
+  shared.set(P_CAB, 1.0);
   shared.set(P_USER_IR_0 + model, static_cast<double>(index));
   markEdited(state);
   const int maxScroll =

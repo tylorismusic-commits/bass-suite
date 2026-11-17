@@ -44,10 +44,11 @@ inline bool readWavMono(const std::string& path, std::vector<float>& out,
     char chunk[4];
     uint32_t chunkSize = 0;
     if (!in.read(chunk, 4) || !readU32(chunkSize)) break;
+    if (chunkSize > 0x7fffffffu) return false;
     if (std::memcmp(chunk, "fmt ", 4) == 0) {
+      if (chunkSize < 16 || chunkSize > 1024) return false;
       std::vector<unsigned char> fmt(chunkSize);
-      if (chunkSize < 16 || !in.read(reinterpret_cast<char*>(fmt.data()),
-                                     chunkSize)) {
+      if (!in.read(reinterpret_cast<char*>(fmt.data()), chunkSize)) {
         return false;
       }
       format = static_cast<uint16_t>(fmt[0] | (fmt[1] << 8));
@@ -59,6 +60,7 @@ inline bool readWavMono(const std::string& path, std::vector<float>& out,
       blockAlign = static_cast<uint16_t>(fmt[12] | (fmt[13] << 8));
       bits = static_cast<uint16_t>(fmt[14] | (fmt[15] << 8));
     } else if (std::memcmp(chunk, "data", 4) == 0) {
+      if (chunkSize > 256u * 1024u * 1024u) return false;
       data.resize(chunkSize);
       if (chunkSize && !in.read(reinterpret_cast<char*>(data.data()),
                                 chunkSize)) {
@@ -72,13 +74,21 @@ inline bool readWavMono(const std::string& path, std::vector<float>& out,
     }
   }
 
-  if (channels == 0 || bits == 0 || data.empty()) return false;
+  if (channels == 0 || channels > 64 || bits == 0 || data.empty()) {
+    return false;
+  }
   if (!(format == 1 || format == 3)) return false;
   if (format == 1 && bits != 16 && bits != 24 && bits != 32) return false;
   if (format == 3 && bits != 32) return false;
+  if (sampleRate == 0) return false;
 
   const int bytes = bits / 8;
-  if (blockAlign == 0) blockAlign = static_cast<uint16_t>(channels * bytes);
+  if (bytes <= 0) return false;
+  const size_t frameBytes = static_cast<size_t>(channels) * bytes;
+  if (blockAlign == 0) {
+    blockAlign = static_cast<uint16_t>(std::min<size_t>(frameBytes, 65535));
+  }
+  if (static_cast<size_t>(blockAlign) < frameBytes) return false;
   const size_t frames = data.size() / blockAlign;
   if (frames == 0) return false;
   std::vector<float> mono(frames, 0.0f);
@@ -106,6 +116,7 @@ inline bool readWavMono(const std::string& path, std::vector<float>& out,
         std::memcpy(&iv, data.data() + off, sizeof(int32_t));
         v = static_cast<float>(static_cast<double>(iv) / 2147483648.0);
       }
+      if (!std::isfinite(v)) v = 0.0f;
       sum += v;
     }
     mono[f] = sum / static_cast<float>(channels);

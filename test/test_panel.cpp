@@ -38,16 +38,16 @@ int main() {
     return 1;
   }
 
-  for (int page = 0; page < 4; ++page) {
+  for (int page = 0; page < 5; ++page) {
     state.page = page;
     panel.tick(shared, state);
     panel.draw(cr, shared, state);
   }
 
   // Every model, every page, must draw without a cairo error.
-  for (int model = 0; model < 7; ++model) {
+  for (int model = 0; model < 4; ++model) {
     shared.set(bass::P_MODEL, static_cast<double>(model));
-    for (int page = 0; page < 4; ++page) {
+    for (int page = 0; page < 5; ++page) {
       state.page = page;
       panel.draw(cr, shared, state);
     }

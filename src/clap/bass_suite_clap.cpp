@@ -802,7 +802,7 @@ bool stateLoad(const clap_plugin_t* p, const clap_istream_t* stream) {
     uint32_t dataLen = 0;
     if (stream->read(stream, &amp, sizeof(amp)) !=
             static_cast<int64_t>(sizeof(amp)) ||
-        amp >= 7u ||
+        amp >= 4u ||
         stream->read(stream, &nameLen, sizeof(nameLen)) !=
             static_cast<int64_t>(sizeof(nameLen)) ||
         nameLen > 1024u) {

@@ -202,6 +202,8 @@ private:
     hostOut_.assign(static_cast<size_t>(maxBlock_) + 512, 0.0f);
     namIn_.assign(static_cast<size_t>(maxModelBlock_), NAM_SAMPLE(0));
     namOut_.assign(static_cast<size_t>(maxModelBlock_), NAM_SAMPLE(0));
+    fifo_.clear();
+    fifo_.reserve(static_cast<size_t>(maxBlock_) * 3 + 16384);
     inPtrs_.assign(1, nullptr);
     outPtrs_.assign(1, nullptr);
   }

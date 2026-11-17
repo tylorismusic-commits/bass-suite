@@ -192,7 +192,7 @@ int main(int argc, char** argv) {
   }
 
   std::vector<clap_event_param_value_t> events;
-  events.push_back(paramEvent(bass::P_CAB, 2.0));
+  events.push_back(paramEvent(bass::P_CAB, 1.0));
   events.push_back(paramEvent(bass::P_USER_IR_1, 1.0));
   clap_input_events_t in{&events, eventsSize, eventsGet};
   clap_output_events_t out{nullptr, outPush};
@@ -253,6 +253,24 @@ int main(int argc, char** argv) {
   if (ec || imported == std::filesystem::directory_iterator()) {
     std::fprintf(stderr, "restored IR was not written to the user folder\n");
     return 1;
+  }
+
+  // A malformed state that claims an IR slot beyond the four amp slots must
+  // be rejected, not mapped onto an unrelated parameter id.
+  {
+    std::vector<unsigned char> bad = saved;
+    const size_t irAmpOffset = sizeof(uint32_t) * 2 +
+                               sizeof(double) * bass::P_COUNT + sizeof(double) +
+                               sizeof(uint32_t) * 2;
+    if (bad.size() >= irAmpOffset + sizeof(uint32_t)) {
+      const uint32_t amp = 4;
+      std::memcpy(bad.data() + irAmpOffset, &amp, sizeof(amp));
+      clap_istream_t badStream{&bad, streamRead};
+      if (secondState->load(second, &badStream)) {
+        std::fprintf(stderr, "state with an out-of-range IR slot was accepted\n");
+        return 1;
+      }
+    }
   }
   second->destroy(second);
   entry->deinit();

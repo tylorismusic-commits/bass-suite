@@ -23,7 +23,7 @@ struct FileEntry {
 
 // UI-only state.  The page is not a host parameter and is not saved.
 struct PanelState {
-  int page = 0;  // 0 amp, 1 pedals, 2 cab
+  int page = 0;  // 0 amp, 1 pedals, 2 cab, 3 NAM, 4 output
   int presetIndex = 0;
   bool presetDirty = false;
   bool presetOpen = false;
@@ -34,7 +34,6 @@ struct PanelState {
   float inLevelR = 0.0f;
   float outLevelL = 0.0f;
   float outLevelR = 0.0f;
-  float outPeakHold = 0.0f;
   float outPeakDb = -120.0f;
   uint32_t lastMeterSerial = 0;
   int meterIdleTicks = 0;

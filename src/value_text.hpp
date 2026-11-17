@@ -152,6 +152,10 @@ inline bool parseParamValue(const Shared&, uint32_t id,
       case P_LIMITER_THRESH: value = (numeric + 24.0) / 24.0; break;
       case P_NAM_LEVEL: value = (numeric + 12.0) / 24.0; break;
       case P_GATE_THRESH: value = (numeric + 80.0) / 60.0; break;
+      case P_OUT_EQ_LOW:
+      case P_OUT_EQ_LOW_MID:
+      case P_OUT_EQ_HIGH_MID:
+      case P_OUT_EQ_HIGH: value = numeric / 24.0 + 0.5; break;
       default: break;
     }
   } else if (suffix == "dbfs") {
@@ -190,6 +194,10 @@ inline bool parseParamValue(const Shared&, uint32_t id,
       case P_LIMITER_THRESH: value = (numeric + 24.0) / 24.0; break;
       case P_NAM_LEVEL: value = (numeric + 12.0) / 24.0; break;
       case P_GATE_THRESH: value = (numeric + 80.0) / 60.0; break;
+      case P_OUT_EQ_LOW:
+      case P_OUT_EQ_LOW_MID:
+      case P_OUT_EQ_HIGH_MID:
+      case P_OUT_EQ_HIGH: value = numeric / 24.0 + 0.5; break;
       case P_GATE_DECAY: value = (numeric - 20.0) / 980.0; break;
       case P_CAB_LOWCUT:
         value = std::log(std::max(numeric, 1.0) / 20.0) / std::log(15.0);

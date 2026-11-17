@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <limits>
 #include <vector>
 
 namespace {
@@ -401,6 +402,33 @@ int main() {
     }
     if (!(topCut < topOpen * 0.4)) {
       std::fprintf(stderr, "output LPF did not cut the top\n");
+      return 1;
+    }
+  }
+
+  // Non-finite host input must be sanitized, not propagated through the
+  // filters and limiter.
+  {
+    bass::Shared b;
+    b.set(bass::P_MODEL, 2.0);
+    b.set(bass::P_CAB_BYPASS, 1.0);
+    b.set(bass::P_COMP_ON, 1.0);
+    b.set(bass::P_OD_ON, 1.0);
+    b.set(bass::P_OCT_ON, 1.0);
+    bass::Engine e;
+    e.prepare(48000.0f);
+    e.setControls(bass::controlsFrom(b));
+    std::vector<float> l(512), r(512);
+    for (int i = 0; i < 512; ++i) {
+      l[i] = (i == 10) ? std::numeric_limits<float>::quiet_NaN()
+                       : ((i == 20) ? std::numeric_limits<float>::infinity()
+                                    : 0.1f * std::sin(0.1f * i));
+      r[i] = l[i];
+    }
+    bass::Meters m;
+    e.process(l.data(), r.data(), 512, m);
+    if (!finiteBuffer(l, r)) {
+      std::fprintf(stderr, "non-finite input was not sanitized\n");
       return 1;
     }
   }

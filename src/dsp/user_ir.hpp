@@ -200,7 +200,7 @@ public:
     if (!isWavName(safe)) {
       safe += ".wav";
     }
-    safe = "imported-" + std::to_string(std::min(std::max(amp, 0), 6)) +
+    safe = "imported-" + std::to_string(std::min(std::max(amp, 0), kAmpCount - 1)) +
            "-" + safe;
 
     std::string dir;
