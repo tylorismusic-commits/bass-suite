@@ -1,0 +1,5 @@
+The generated impulse response WAV files in this directory are released under
+CC0 1.0 Universal (public domain dedication):
+https://creativecommons.org/publicdomain/zero/1.0/
+
+The parametric model and fitter code in tools/ are GPL-3.0-or-later.

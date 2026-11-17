@@ -1,0 +1,174 @@
+{
+  "1x15": {
+    "license": "CC0-1.0",
+    "method": "parametric bass-cab magnitude synthesis, minimum phase",
+    "mics": {
+      "121": {
+        "file_48k": "cab_1x15_121.wav",
+        "file_96k": "cab_1x15_121_96k.wav",
+        "params": {
+          "mic_hi_f": 5000.0,
+          "mic_hi_gain": -6.0,
+          "mic_low_f": 120.0,
+          "mic_low_gain": 1.0,
+          "tilt": -0.5
+        }
+      },
+      "57": {
+        "file_48k": "cab_1x15_57.wav",
+        "file_96k": "cab_1x15_57_96k.wav",
+        "params": {
+          "mic_hi_f": 6500.0,
+          "mic_hi_gain": 0.0,
+          "mic_low_f": 100.0,
+          "mic_low_gain": 0.0,
+          "tilt": 0.0
+        }
+      },
+      "blend": {
+        "file_48k": "cab_1x15_blend.wav",
+        "file_96k": "cab_1x15_blend_96k.wav",
+        "params": {
+          "mic_hi_f": 5800.0,
+          "mic_hi_gain": -3.0,
+          "mic_low_f": 110.0,
+          "mic_low_gain": 0.5,
+          "tilt": -0.25
+        }
+      }
+    },
+    "taps": {
+      "48k": 2048,
+      "96k": 4096
+    }
+  },
+  "2x12": {
+    "license": "CC0-1.0",
+    "method": "parametric bass-cab magnitude synthesis, minimum phase",
+    "mics": {
+      "121": {
+        "file_48k": "cab_2x12_121.wav",
+        "file_96k": "cab_2x12_121_96k.wav",
+        "params": {
+          "mic_hi_f": 5000.0,
+          "mic_hi_gain": -6.0,
+          "mic_low_f": 120.0,
+          "mic_low_gain": 1.0,
+          "tilt": -0.5
+        }
+      },
+      "57": {
+        "file_48k": "cab_2x12_57.wav",
+        "file_96k": "cab_2x12_57_96k.wav",
+        "params": {
+          "mic_hi_f": 6500.0,
+          "mic_hi_gain": 0.0,
+          "mic_low_f": 100.0,
+          "mic_low_gain": 0.0,
+          "tilt": 0.0
+        }
+      },
+      "blend": {
+        "file_48k": "cab_2x12_blend.wav",
+        "file_96k": "cab_2x12_blend_96k.wav",
+        "params": {
+          "mic_hi_f": 5800.0,
+          "mic_hi_gain": -3.0,
+          "mic_low_f": 110.0,
+          "mic_low_gain": 0.5,
+          "tilt": -0.25
+        }
+      }
+    },
+    "taps": {
+      "48k": 2048,
+      "96k": 4096
+    }
+  },
+  "4x10": {
+    "license": "CC0-1.0",
+    "method": "parametric bass-cab magnitude synthesis, minimum phase",
+    "mics": {
+      "121": {
+        "file_48k": "cab_4x10_121.wav",
+        "file_96k": "cab_4x10_121_96k.wav",
+        "params": {
+          "mic_hi_f": 5000.0,
+          "mic_hi_gain": -6.0,
+          "mic_low_f": 120.0,
+          "mic_low_gain": 1.0,
+          "tilt": -0.5
+        }
+      },
+      "57": {
+        "file_48k": "cab_4x10_57.wav",
+        "file_96k": "cab_4x10_57_96k.wav",
+        "params": {
+          "mic_hi_f": 6500.0,
+          "mic_hi_gain": 0.0,
+          "mic_low_f": 100.0,
+          "mic_low_gain": 0.0,
+          "tilt": 0.0
+        }
+      },
+      "blend": {
+        "file_48k": "cab_4x10_blend.wav",
+        "file_96k": "cab_4x10_blend_96k.wav",
+        "params": {
+          "mic_hi_f": 5800.0,
+          "mic_hi_gain": -3.0,
+          "mic_low_f": 110.0,
+          "mic_low_gain": 0.5,
+          "tilt": -0.25
+        }
+      }
+    },
+    "taps": {
+      "48k": 2048,
+      "96k": 4096
+    }
+  },
+  "8x10": {
+    "license": "CC0-1.0",
+    "method": "parametric bass-cab magnitude synthesis, minimum phase",
+    "mics": {
+      "121": {
+        "file_48k": "cab_8x10_121.wav",
+        "file_96k": "cab_8x10_121_96k.wav",
+        "params": {
+          "mic_hi_f": 5000.0,
+          "mic_hi_gain": -6.0,
+          "mic_low_f": 120.0,
+          "mic_low_gain": 1.0,
+          "tilt": -0.5
+        }
+      },
+      "57": {
+        "file_48k": "cab_8x10_57.wav",
+        "file_96k": "cab_8x10_57_96k.wav",
+        "params": {
+          "mic_hi_f": 6500.0,
+          "mic_hi_gain": 0.0,
+          "mic_low_f": 100.0,
+          "mic_low_gain": 0.0,
+          "tilt": 0.0
+        }
+      },
+      "blend": {
+        "file_48k": "cab_8x10_blend.wav",
+        "file_96k": "cab_8x10_blend_96k.wav",
+        "params": {
+          "mic_hi_f": 5800.0,
+          "mic_hi_gain": -3.0,
+          "mic_low_f": 110.0,
+          "mic_low_gain": 0.5,
+          "tilt": -0.25
+        }
+      }
+    },
+    "taps": {
+      "48k": 2048,
+      "96k": 4096
+    }
+  }
+}

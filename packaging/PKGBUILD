@@ -1,0 +1,28 @@
+# Maintainer: tylor <tylorismusic@users.noreply.github.com>
+pkgname=bass-suite
+pkgver=0.1.0
+pkgrel=1
+_tag=0.1.0
+pkgdesc="Four-amp bass suite with cabs, compression, drive and NAM (CLAP + LV2)"
+arch=('x86_64')
+url="https://github.com/tylorismusic-commits/bass-suite"
+license=('GPL-3.0-or-later')
+depends=('cairo' 'freetype2' 'libx11' 'lv2' 'libsamplerate')
+makedepends=('cmake' 'pkgconf' 'lilv' 'libxtst' 'xorg-server-xvfb')
+source=("$pkgname-$_tag.tar.gz::$url/archive/v$_tag.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cmake -S "$pkgname-$_tag" -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  cmake --build build -j"$(nproc)"
+}
+
+check() {
+  ctest --test-dir build --output-on-failure
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}

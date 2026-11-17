@@ -1,0 +1,8 @@
+build/
+build-*/
+*.o
+refs/irs/**/*.wav
+refs/irs/**/*.WAV
+
+__pycache__/
+*.pyc
