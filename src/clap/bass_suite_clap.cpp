@@ -402,33 +402,15 @@ int currentModel(const Plugin* s) {
 
 bool paramAppliesToModel(uint32_t param, int model) {
   switch (param) {
-    case P_BRIGHT:
-    case P_CHORUS_ON:
-    case P_CHORUS_RATE:
-    case P_CHORUS_DEPTH:
-      return model == 0;
-    case P_CUT:
-      return model == 1;
-    case P_POWER_SCALE:
-      return model == 2;
-    case P_CRUNCH:
-      return model == 4;
-    case P_RECTIFIER:
-      return model == 6;
-    case P_VOICE:
-      return model == 3 || model == 5 || model == 6;
-    case P_RESONANCE:
-      return model == 2 || model == 4 || model == 5 || model == 6;
-    case P_PRESENCE:
-      return model != 0;
     case P_USER_IR_0:
     case P_USER_IR_1:
     case P_USER_IR_2:
     case P_USER_IR_3:
-    case P_USER_IR_4:
-    case P_USER_IR_5:
-    case P_USER_IR_6:
       return param == P_USER_IR_0 + static_cast<uint32_t>(model);
+    case P_RESONANCE:
+      return model == 2 || model == 3;
+    case P_PRESENCE:
+      return model != 0;
     default:
       return true;
   }
@@ -493,7 +475,7 @@ bool paramsValueToText(const clap_plugin_t* p, clap_id id, double value,
     }
     return true;
   }
-  if (id >= P_USER_IR_0 && id <= P_USER_IR_6) {
+  if (id >= P_USER_IR_0 && id <= P_USER_IR_3) {
     const int index = std::clamp(static_cast<int>(value + 0.5), 0, kUserIrMax);
     if (index == 0) {
       std::snprintf(out, size, "None");
@@ -505,20 +487,10 @@ bool paramsValueToText(const clap_plugin_t* p, clap_id id, double value,
   }
   const ParamSpec& spec = kParamSpecs[id];
   if (const char* label = labelForValue(spec, value)) {
-    if (id == P_HQ) {
-      std::snprintf(out, size, "%s", isOn(value) ? "HQ" : "ECO");
-    } else {
-      std::snprintf(out, size, "%s", label);
-    }
+    std::snprintf(out, size, "%s", label);
     return true;
   }
   switch (id) {
-    case P_HQ:
-      std::snprintf(out, size, "%s", isOn(value) ? "HQ" : "ECO");
-      return true;
-    case P_DELAY_TIME:
-      std::snprintf(out, size, "%.0f ms", delayTimeMs(static_cast<float>(value)));
-      return true;
     case P_CAB_LEVEL:
       std::snprintf(out, size, "%+.1f dB",
                     cabLevelDb(static_cast<float>(value)));
@@ -531,14 +503,8 @@ bool paramsValueToText(const clap_plugin_t* p, clap_id id, double value,
       std::snprintf(out, size, "%.0f Hz",
                     cabHighCutHz(static_cast<float>(value)));
       return true;
-    case P_REVERB_PREDELAY:
-      std::snprintf(out, size, "%.0f ms", value * 200.0);
-      return true;
     case P_LIMITER_THRESH:
       std::snprintf(out, size, "%.1f dB", -24.0 + 24.0 * value);
-      return true;
-    case P_BPM:
-      std::snprintf(out, size, "%.0f BPM", value);
       return true;
     case P_NAM_LEVEL:
       std::snprintf(out, size, "%+.1f dB", -12.0 + 24.0 * value);
@@ -548,6 +514,19 @@ bool paramsValueToText(const clap_plugin_t* p, clap_id id, double value,
       return true;
     case P_GATE_DECAY:
       std::snprintf(out, size, "%.0f ms", 20.0 + 980.0 * value);
+      return true;
+    case P_OUT_EQ_LOW:
+    case P_OUT_EQ_LOW_MID:
+    case P_OUT_EQ_HIGH_MID:
+    case P_OUT_EQ_HIGH:
+      std::snprintf(out, size, "%+.1f dB", (value - 0.5) * 24.0);
+      return true;
+    case P_OUT_HPF:
+      std::snprintf(out, size, "%.0f Hz", outHpfHz(static_cast<float>(value)));
+      return true;
+    case P_OUT_LPF:
+      std::snprintf(out, size, "%.0f Hz", outLpfHz(static_cast<float>(value)));
+      return true;
       return true;
     default:
       break;
@@ -613,9 +592,6 @@ bool paramsTextToValue(const clap_plugin_t* p, clap_id id, const char* text,
     return false;
   }
   switch (id) {
-    case P_DELAY_TIME:
-      v = (v <= 20.0) ? 0.0 : std::sqrt((v - 20.0) / 1980.0);
-      break;
     case P_CAB_LEVEL:
       v = (v + 24.0) / 30.0;
       break;
@@ -625,8 +601,17 @@ bool paramsTextToValue(const clap_plugin_t* p, clap_id id, const char* text,
     case P_CAB_HIGHCUT:
       v = std::log(std::max(v, 2000.0) / 2000.0) / std::log(10.0);
       break;
-    case P_REVERB_PREDELAY:
-      v = v / 200.0;
+    case P_OUT_EQ_LOW:
+    case P_OUT_EQ_LOW_MID:
+    case P_OUT_EQ_HIGH_MID:
+    case P_OUT_EQ_HIGH:
+      v = v / 24.0 + 0.5;
+      break;
+    case P_OUT_HPF:
+      v = std::log(std::max(v, 20.0) / 20.0) / std::log(15.0);
+      break;
+    case P_OUT_LPF:
+      v = std::log(std::max(v, 2000.0) / 2000.0) / std::log(10.0);
       break;
     default:
       break;
@@ -660,14 +645,6 @@ void applyEvents(Plugin* s, const clap_input_events_t* in) {
       const auto* e = reinterpret_cast<const clap_event_param_mod_t*>(h);
       if (e->param_id < P_COUNT) {
         s->shared.setFromHost(e->param_id, e->amount);
-      }
-    } else if (h->type == CLAP_EVENT_TRANSPORT) {
-      const auto* t = reinterpret_cast<const clap_event_transport_t*>(h);
-      if (t->flags & CLAP_TRANSPORT_HAS_TEMPO) {
-        s->engine.setTempo(static_cast<float>(t->tempo), true);
-        s->shared.bpm.store(static_cast<float>(t->tempo),
-                            std::memory_order_relaxed);
-        s->shared.hostTempo.store(true, std::memory_order_relaxed);
       }
     }
   }
@@ -750,7 +727,7 @@ bool stateSave(const clap_plugin_t* p, const clap_ostream_t* stream) {
   // block.  Older session files simply end here and still load.
   std::vector<std::pair<int, std::pair<std::string, std::vector<unsigned char>>>>
       irs;
-  for (int amp = 0; amp < 7; ++amp) {
+  for (int amp = 0; amp < 4; ++amp) {
     const int index = static_cast<int>(
         s->shared.get(P_USER_IR_0 + static_cast<uint32_t>(amp)) + 0.5);
     std::string name;
@@ -816,7 +793,7 @@ bool stateLoad(const clap_plugin_t* p, const clap_istream_t* stream) {
   UserIrStateHeader irHeader{};
   if (stream->read(stream, &irHeader, sizeof(irHeader)) !=
           static_cast<int64_t>(sizeof(irHeader)) ||
-      irHeader.version != 1u || irHeader.count > 7u) {
+      irHeader.version != 1u || irHeader.count > 4u) {
     return true;
   }
   for (uint32_t i = 0; i < irHeader.count; ++i) {
@@ -1029,8 +1006,6 @@ clap_process_status pluginProcess(const clap_plugin_t* p,
   s->engine.setControls(controlsFrom(s->shared));
   s->engine.process(left, right, static_cast<int>(frames), s->meters);
 
-  s->shared.bpm.store(s->meters.bpm, std::memory_order_relaxed);
-  s->shared.hostTempo.store(s->meters.hostTempo, std::memory_order_relaxed);
   s->shared.inPeakDb.store(s->meters.inPeakDb, std::memory_order_relaxed);
   s->shared.outPeakDb.store(s->meters.outPeakDb, std::memory_order_relaxed);
   s->shared.inPeakLDb.store(s->meters.inPeakLDb, std::memory_order_relaxed);

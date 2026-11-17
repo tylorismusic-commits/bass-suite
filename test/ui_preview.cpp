@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
   const std::string fontDir =
       argc > 1 ? argv[1] : "assets/fonts";
   const std::string outDir =
-      argc > 2 ? argv[2] : "/tmp/ampsuite-preview";
+      argc > 2 ? argv[2] : "/tmp/basssuite-preview";
   const double scale = argc > 3 ? std::atof(argv[3]) : 1.0;
   const int cabSet = argc > 4 ? std::atoi(argv[4]) : 0;
   if (scale < 0.5 || scale > 2.5) {
@@ -43,9 +43,9 @@ int main(int argc, char** argv) {
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t* cr = cairo_create(surface);
 
-  for (int model = 0; model < 7; ++model) {
+  for (int model = 0; model < 4; ++model) {
     shared.set(bass::P_MODEL, static_cast<double>(model));
-    for (int page = 0; page < 4; ++page) {
+    for (int page = 0; page < 5; ++page) {
       state.page = page;
       panel.tick(shared, state);
       cairo_save(cr);

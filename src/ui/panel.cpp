@@ -184,11 +184,6 @@ Rgb mix(Rgb a, Rgb b, double t) {
 
 bool hasPresence(int model) { return model != 0; }
 bool hasResonance(int model) { return model == 2 || model == 3; }
-bool hasCut(int) { return false; }
-bool hasPowerScale(int) { return false; }
-bool hasCrunch(int) { return false; }
-bool hasRectifier(int) { return false; }
-bool hasVoice(int) { return false; }
 const char* factoryCabName(int set) {
   switch (set) {
     case 0: return "1×15";
@@ -471,6 +466,7 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   pagePill(1, 638, 20, 76, 24, "PEDALS");
   pagePill(2, 722, 20, 58, 24, "CAB");
   pagePill(3, 788, 20, 58, 24, "NAM");
+  pagePill(4, 854, 20, 58, 24, "OUT");
 
   // Model tabs.
   const int tabCount = static_cast<int>(Model::Count);
@@ -507,37 +503,10 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     knob(P_GATE_DECAY, 118, 300, 20, "DECAY", {}, true);
     knob(P_INPUT, 118, 520, 22, "INPUT", kTrimScale, true);
     knob(P_MASTER, 465, 540, 26, "MASTER", {"-18", "-9", "0"});
-    knob(P_OUTPUT, 900, 520, 30, "OUTPUT", kTrimScale);
 
     // Amp bypass: keep the Comp, Drive and cab active without the preamp/power.
     pill(P_AMP_BYPASS, 852, 145, 96, 24, "AMP BYPASS");
 
-    // Output limiter, in the right column like Comp Suite.
-    pill(P_LIMITER_ON, 852, 270, 96, 24, "LIMITER");
-    knob(P_LIMITER_THRESH, 900, 372, 26, "THRESH",
-         {"-24", "-12", "-6", "0"});
-
-    if (hasCut(model)) {
-      knob(P_CUT, 820, 520, 26, "CUT", kToneScale);
-    }
-    if (hasPowerScale(model)) {
-      toggle(P_POWER_SCALE, 820, 400, 1.0, "100", "50");
-    }
-    if (hasCrunch(model)) {
-      toggle(P_CRUNCH, 820, 400, 1.0, "CRUNCH", "LEAD");
-    }
-    if (hasRectifier(model)) {
-      toggle(P_RECTIFIER, 820, 400, 0.0, "TUBE", "SI");
-    }
-    if (hasVoice(model)) {
-      knob(P_VOICE, 820, 520, 22, "VOICE", {"A", "B", "C"}, true, 3);
-    }
-    if (model == 0) {
-      toggle(P_BRIGHT, 750, 380, 0.0, "BRIGHT", "OFF");
-      toggle(P_CHORUS_ON, 810, 380, 1.0, "CHORUS", "OFF");
-      knob(P_CHORUS_RATE, 770, 490, 20, "RATE", {}, true);
-      knob(P_CHORUS_DEPTH, 830, 490, 20, "DEPTH", {}, true);
-    }
   } else if (state.page == 1) {
     // Pedalboard page: Comp -> Octave -> Drive.
     const double cy = 185;
@@ -565,6 +534,19 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     // NAM page.
     pill(P_NAM_ON, 852, 300, 96, 24, "NAM");
     knob(P_NAM_LEVEL, 900, 380, 26, "LEVEL", {}, true);
+  } else if (state.page == 4) {
+    // Output page: 4-band EQ, HPF/LPF, limiter, output.
+    static const std::vector<const char*> kTrimScale = {"-12", "0", "+12"};
+    knob(P_OUT_EQ_LOW, 170, 285, 32, "LOW");
+    knob(P_OUT_EQ_LOW_MID, 330, 285, 32, "LOW MID");
+    knob(P_OUT_EQ_HIGH_MID, 490, 285, 32, "HIGH MID");
+    knob(P_OUT_EQ_HIGH, 650, 285, 32, "HIGH");
+    knob(P_OUT_HPF, 800, 285, 26, "HPF");
+    knob(P_OUT_LPF, 920, 285, 26, "LPF");
+    pill(P_LIMITER_ON, 160, 525, 96, 24, "LIMITER");
+    knob(P_LIMITER_THRESH, 300, 555, 26, "THRESH",
+         {"-24", "-12", "-6", "0"});
+    knob(P_OUTPUT, 920, 545, 30, "OUTPUT", kTrimScale);
   } else {
     // Cabinet page.
     button(P_CAB, 60, 200, 110, 28, 0.0, "FACTORY");
@@ -781,12 +763,7 @@ bool Panel::pointerDown(Shared& shared, PanelState& state, double x, double y,
         if (w.param >= P_COUNT) {
           return true;
         }
-        if (w.param == P_LOOP_POS) {
-          shared.set(P_LOOP_POS, shared.get(P_LOOP_POS) > 0.5 ? 0.0 : 1.0);
-        } else if (w.param == P_REVERB_MODE) {
-          shared.set(P_REVERB_MODE,
-                     shared.get(P_REVERB_MODE) > 0.5 ? 0.0 : 1.0);
-        } else if (kParamSpecs[w.param].toggled) {
+        if (kParamSpecs[w.param].toggled) {
           shared.set(w.param, shared.get(w.param) > 0.5 ? 0.0 : 1.0);
         } else {
           shared.set(w.param, w.value);
@@ -905,11 +882,6 @@ void Panel::tick(const Shared& shared, PanelState& state) const {
   state.outPeakDb = idle
                         ? -120.0f
                         : shared.outPeakDb.load(std::memory_order_relaxed);
-  state.bpm = shared.bpm.load(std::memory_order_relaxed);
-  state.hostTempo = shared.hostTempo.load(std::memory_order_relaxed);
-  if (!state.hostTempo) {
-    state.bpm = static_cast<float>(shared.get(P_BPM));
-  }
   if (++state.userIrScanTicks >= 60) {
     state.userIrScanTicks = 0;
     state.userIrs = listUserIrFiles(userIrDir());
@@ -1074,6 +1046,11 @@ void Panel::applyPreset(Shared& shared, PanelState& state, int index) const {
     return;
   }
   const Preset& p = kPresets[index];
+  // Start from the neutral defaults so a preset cannot inherit an octave,
+  // drive or output EQ left over from the previous preset.
+  for (uint32_t param = 0; param < P_COUNT; ++param) {
+    shared.set(param, kParamSpecs[param].def);
+  }
   shared.set(P_MODEL, static_cast<double>(p.model));
   for (const PresetValue& v : p.values) {
     if (v.param >= 0 && v.param < static_cast<int>(P_COUNT)) {
@@ -1138,6 +1115,8 @@ void Panel::draw(cairo_t* cr, const Shared& shared, const PanelState& state) {
     drawPedalPage(cr, shared, state);
   } else if (state.page == 3) {
     drawNamPage(cr, shared, state);
+  } else if (state.page == 4) {
+    drawOutPage(cr, shared, state);
   } else {
     drawCabPage(cr, shared, state);
   }
@@ -1215,7 +1194,6 @@ void Panel::drawAmpPage(cairo_t* cr, const Shared& shared,
   text(cr, cabSubtitle(model, cab, cabSet), 900, 220, 9.5, 1, 0.42, 0.44, 0.47);
 
   // Output limiter caption, above its pill and knob.
-  text(cr, "OUTPUT", 900, 256, 9.5, 1, 0.45, 0.47, 0.50);
 
   // Side level meters.
   drawLevelMeter(cr, 20, 150, 16, 352, state.inLevelL, state.inLevelR, model,
@@ -1460,6 +1438,103 @@ void Panel::drawCabPage(cairo_t* cr, const Shared& shared,
        skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
 }
 
+void Panel::drawOutPage(cairo_t* cr, const Shared& shared,
+                        const PanelState& state) const {
+  const int model = static_cast<int>(shared.get(P_MODEL) + 0.5);
+  const int cab = static_cast<int>(shared.get(P_CAB) + 0.5);
+  const int cabSet = cabSetFrom(shared);
+  const Skin skin = skinFor(model);
+  text(cr, "OUTPUT", 520, 150, 18, 1, skin.legend.r, skin.legend.g,
+       skin.legend.b);
+  char sub[160];
+  std::snprintf(sub, sizeof(sub), "%s  ·  %s", modelName(model),
+                cabName(model, cab, cabSet));
+  text(cr, sub, 520, 169, 10.5, 1, skin.legendDim.r, skin.legendDim.g,
+       skin.legendDim.b);
+
+  // Output EQ response.
+  const double x = 160.0, y = 340.0, w = 720.0, h = 140.0;
+  roundRect(cr, x, y, w, h, 4);
+  cairo_set_source_rgba(cr, 0.025, 0.027, 0.030, 0.96);
+  cairo_fill(cr);
+  setRgb(cr, skin.tabOn, 0.65);
+  cairo_set_line_width(cr, 1.0);
+  roundRect(cr, x + 0.5, y + 0.5, w - 1, h - 1, 4);
+  cairo_stroke(cr);
+
+  const double low = (shared.get(P_OUT_EQ_LOW) - 0.5) * 24.0;
+  const double lowMid = (shared.get(P_OUT_EQ_LOW_MID) - 0.5) * 24.0;
+  const double highMid = (shared.get(P_OUT_EQ_HIGH_MID) - 0.5) * 24.0;
+  const double high = (shared.get(P_OUT_EQ_HIGH) - 0.5) * 24.0;
+  const double hp = outHpfHz(static_cast<float>(shared.get(P_OUT_HPF)));
+  const double lp = outLpfHz(static_cast<float>(shared.get(P_OUT_LPF)));
+
+  auto bell = [](double f, double fc, double q) {
+    const double t = std::log2(f / fc);
+    return std::exp(-(t * t) / (2.0 * q * q));
+  };
+  auto curveDb = [&](double f) {
+    double d = low / (1.0 + (f / 80.0) * (f / 80.0));
+    d += high * (f * f) / (f * f + 6000.0 * 6000.0);
+    d += lowMid * bell(f, 250.0, 0.9);
+    d += highMid * bell(f, 1200.0, 0.9);
+    d -= 12.0 * std::log10(1.0 + (hp / f) * (hp / f));
+    d -= 12.0 * std::log10(1.0 + (f / lp) * (f / lp));
+    return std::clamp(d, -18.0, 18.0);
+  };
+
+  const double cy = y + h * 0.5;
+  cairo_set_line_width(cr, 1.0);
+  setRgb(cr, skin.legendDim, 0.18);
+  for (double f : {20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0,
+                   5000.0, 10000.0, 20000.0}) {
+    const double u = std::log(f / 20.0) / std::log(1000.0);
+    const double gx = x + w * u;
+    cairo_move_to(cr, gx, y);
+    cairo_line_to(cr, gx, y + h);
+    cairo_stroke(cr);
+  }
+  for (int i = -1; i <= 1; ++i) {
+    const double gy = cy - (h * 0.4) * i;
+    setRgb(cr, skin.legendDim, i == 0 ? 0.40 : 0.16);
+    cairo_move_to(cr, x, gy);
+    cairo_line_to(cr, x + w, gy);
+    cairo_stroke(cr);
+  }
+
+  cairo_set_line_width(cr, 2.0);
+  setRgb(cr, skin.knobIndicator, 0.95);
+  for (int i = 0; i < static_cast<int>(w); ++i) {
+    const double u = i / (w - 1.0);
+    const double f = 20.0 * std::pow(1000.0, u);
+    const double py = cy - (h * 0.4) * (curveDb(f) / 18.0);
+    if (i == 0) cairo_move_to(cr, x + i, py);
+    else cairo_line_to(cr, x + i, py);
+  }
+  cairo_stroke(cr);
+
+  text(cr, "4-BAND EQ", x + 10, y + 14, 9, 0, skin.legendDim.r,
+       skin.legendDim.g, skin.legendDim.b);
+  text(cr, "20", x + 4, y + h - 6, 8, 0, skin.legendDim.r, skin.legendDim.g,
+       skin.legendDim.b);
+  text(cr, "100", x + w * 0.26, y + h - 6, 8, 1, skin.legendDim.r,
+       skin.legendDim.g, skin.legendDim.b);
+  text(cr, "1k", x + w * 0.566, y + h - 6, 8, 1, skin.legendDim.r,
+       skin.legendDim.g, skin.legendDim.b);
+  text(cr, "10k", x + w * 0.90, y + h - 6, 8, 2, skin.legendDim.r,
+       skin.legendDim.g, skin.legendDim.b);
+
+  text(cr, "LIMITER", 160, 515, 9.5, 0, skin.legendDim.r, skin.legendDim.g,
+       skin.legendDim.b);
+  text(cr, "OUTPUT", 920, 500, 9.5, 1, skin.legendDim.r, skin.legendDim.g,
+       skin.legendDim.b);
+
+  drawLevelMeter(cr, 20, 150, 16, 352, state.inLevelL, state.inLevelR, model,
+                 true, -60.0, 0.0);
+  drawLevelMeter(cr, 986, 150, 16, 352, state.outLevelL, state.outLevelR,
+                 model, false, -60.0, 3.0);
+}
+
 void Panel::drawFooter(cairo_t* cr, const Shared& shared,
                        const PanelState& state) const {
   const int model = static_cast<int>(shared.get(P_MODEL) + 0.5);
@@ -1488,6 +1563,8 @@ void Panel::drawFooter(cairo_t* cr, const Shared& shared,
             ? state.namModels[static_cast<size_t>(index - 1)]
             : "none";
     std::snprintf(buf, sizeof(buf), "NAM MODEL  ·  %s", name.c_str());
+  } else if (state.page == 4) {
+    std::snprintf(buf, sizeof(buf), "OUTPUT  ·  EQ / HPF / LPF / LIMITER");
   } else {
     std::snprintf(buf, sizeof(buf), "%s  ·  %s", skin.caption,
                   cabName(model, cab, cabSet));
@@ -1529,26 +1606,12 @@ void Panel::drawWidget(cairo_t* cr, const Widget& w, const Shared& shared,
     case Kind::Pill: {
       bool on = isLit(shared, state, w);
       Widget ww = w;
-      if (w.param == P_HQ) {
-        ww.label = on ? "HQ" : "ECO";
-      } else if (w.param == P_NAM_ON) {
+      if (w.param == P_NAM_ON) {
         ww.label = on ? "NAM ON" : "AMP ON";
       } else if (w.param == P_GATE_ON) {
         ww.label = on ? "GATE ON" : "GATE OFF";
       } else if (w.param == P_AMP_BYPASS) {
         ww.label = on ? "BYPASS ON" : "AMP ON";
-      } else if (w.param == P_LOOP_POS) {
-        ww.label = on ? "LOOP POST" : "LOOP PRE";
-      } else if (w.param == P_DELAY_SYNC) {
-        ww.label = on ? "SYNC" : "FREE";
-      } else if (w.param == P_DELAY_PINGPONG) {
-        ww.label = on ? "PING-PONG" : "MONO";
-      } else if (w.param == P_REVERB_MODE) {
-        ww.label = on ? "SPRING" : "PLATE";
-      } else if (w.param == P_POWER_SCALE) {
-        ww.label = on ? "100" : "50";
-      } else if (w.param == P_RECTIFIER) {
-        ww.label = on ? "TUBE" : "SI";
       }
       drawPill(cr, ww, on, model);
       break;
@@ -1680,12 +1743,6 @@ void Panel::drawKnob(cairo_t* cr, const Widget& w, double value,
       w.labelBelow ? cy + r * 1.44 + 20 : cy - r * 1.44 - 18;
   text(cr, w.label, cx, labelY, 10.5, 1, skin.legend.r, skin.legend.g,
        skin.legend.b);
-  if (w.param == P_DELAY_DIV) {
-    const int idx = std::min(
-        std::max(static_cast<int>(std::lround(value)), 0), 8);
-    text(cr, kParamSpecs[P_DELAY_DIV].labels.names[idx], cx, labelY + 13, 9,
-         1, skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
-  }
 }
 
 void Panel::drawButton(cairo_t* cr, const Widget& w, bool lit,

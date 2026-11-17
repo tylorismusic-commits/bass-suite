@@ -193,12 +193,12 @@ int main(int argc, char** argv) {
 
   std::vector<clap_event_param_value_t> events;
   events.push_back(paramEvent(bass::P_CAB, 2.0));
-  events.push_back(paramEvent(bass::P_USER_IR_4, 1.0));
+  events.push_back(paramEvent(bass::P_USER_IR_1, 1.0));
   clap_input_events_t in{&events, eventsSize, eventsGet};
   clap_output_events_t out{nullptr, outPush};
   firstParams->flush(first, &in, &out);
   double selected = 0.0;
-  if (!firstParams->get_value(first, bass::P_USER_IR_4, &selected) ||
+  if (!firstParams->get_value(first, bass::P_USER_IR_1, &selected) ||
       std::fabs(selected - 1.0) > 0.01) {
     std::fprintf(stderr, "user IR parameter did not stick\n");
     return 1;
@@ -236,13 +236,13 @@ int main(int argc, char** argv) {
     return 1;
   }
   double restored = 0.0;
-  if (!secondParams->get_value(second, bass::P_USER_IR_4, &restored) ||
+  if (!secondParams->get_value(second, bass::P_USER_IR_1, &restored) ||
       restored < 1.0) {
     std::fprintf(stderr, "restored user IR selection missing\n");
     return 1;
   }
   char text[256] = {};
-  if (!secondParams->value_to_text(second, bass::P_USER_IR_4, restored, text,
+  if (!secondParams->value_to_text(second, bass::P_USER_IR_1, restored, text,
                                    sizeof(text)) ||
       std::strcmp(text, "None") == 0) {
     std::fprintf(stderr, "restored user IR name missing\n");

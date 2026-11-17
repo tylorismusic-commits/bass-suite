@@ -78,11 +78,11 @@ inline const AmpRecipe& recipeFor(int model) noexcept {
       {"Flip Top", 2, {s1, s2}, ToneStackKind::FlipTop, 0.50f, 0.75f, 0.20f,
        0.18f, 0.80f, 16.0f, false, false},
       // SVT: three-stage big clean tube.
-      {"SVT", 3, {s1, s2, s3}, ToneStackKind::SVT, 0.48f, 0.95f, 0.25f,
-       0.12f, 0.72f, 17.0f, false, false},
+      {"SVT", 3, {s1, s2, s3}, ToneStackKind::SVT, 0.42f, 0.95f, 0.25f,
+       0.12f, 0.72f, 18.0f, false, false},
       // Modern: four-stage aggressive upper-mid voice.
-      {"Modern", 4, {s1, s2, s3, s4}, ToneStackKind::Modern, 0.68f, 1.15f,
-       0.10f, 0.08f, 0.78f, 15.0f, false, false},
+      {"Modern", 4, {s1, s2, s3, s4}, ToneStackKind::Modern, 0.60f, 1.15f,
+       0.10f, 0.08f, 0.78f, 16.0f, false, false},
   };
   const int m = model < 0 ? 0 : (model > 3 ? 3 : model);
   return recipes[m];

@@ -9,7 +9,6 @@
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix atom: <http://lv2plug.in/ns/ext/atom#> .
-@prefix time: <http://lv2plug.in/ns/ext/time#> .
 
 <https://github.com/tylorismusic-commits/bass-suite>
     a lv2:Plugin ;
@@ -175,80 +174,6 @@
     [
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 15 ;
-        lv2:symbol "bright" ;
-        lv2:name "Bright" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:toggled true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 16 ;
-        lv2:symbol "cut" ;
-        lv2:name "Cut" ;
-        lv2:default 0.5 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 17 ;
-        lv2:symbol "voice" ;
-        lv2:name "Voice" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 2 ;
-        lv2:integer true ;
-        lv2:scalePoint [ rdf:value 0 ; rdfs:label "A" ] ,
-            [ rdf:value 1 ; rdfs:label "B" ] ,
-            [ rdf:value 2 ; rdfs:label "C" ] ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 18 ;
-        lv2:symbol "rectifier" ;
-        lv2:name "Rectifier" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:scalePoint [ rdf:value 0 ; rdfs:label "Si" ] ,
-            [ rdf:value 1 ; rdfs:label "Tube" ] ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 19 ;
-        lv2:symbol "crunch" ;
-        lv2:name "Crunch" ;
-        lv2:default 1 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:toggled true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 20 ;
-        lv2:symbol "power_scale" ;
-        lv2:name "Power Scale" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:scalePoint [ rdf:value 0 ; rdfs:label "50" ] ,
-            [ rdf:value 1 ; rdfs:label "100" ] ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 21 ;
         lv2:symbol "cab" ;
         lv2:name "Cabinet" ;
         lv2:default 0 ;
@@ -261,7 +186,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 22 ;
+        lv2:index 16 ;
         lv2:symbol "cab_mic" ;
         lv2:name "Cab Mic" ;
         lv2:default 0 ;
@@ -275,7 +200,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 23 ;
+        lv2:index 17 ;
         lv2:symbol "cab_level" ;
         lv2:name "Cab Level" ;
         lv2:default 0.6 ;
@@ -285,7 +210,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 24 ;
+        lv2:index 18 ;
         lv2:symbol "cab_lowcut" ;
         lv2:name "Cab Low Cut" ;
         lv2:default 0 ;
@@ -295,7 +220,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 25 ;
+        lv2:index 19 ;
         lv2:symbol "cab_highcut" ;
         lv2:name "Cab High Cut" ;
         lv2:default 1 ;
@@ -305,7 +230,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 26 ;
+        lv2:index 20 ;
         lv2:symbol "cab_bypass" ;
         lv2:name "Cab Bypass" ;
         lv2:default 0 ;
@@ -317,7 +242,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 27 ;
+        lv2:index 21 ;
         lv2:symbol "drive_on" ;
         lv2:name "Drive" ;
         lv2:default 0 ;
@@ -329,7 +254,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 28 ;
+        lv2:index 22 ;
         lv2:symbol "drive_amount" ;
         lv2:name "Drive" ;
         lv2:default 0.25 ;
@@ -339,7 +264,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 29 ;
+        lv2:index 23 ;
         lv2:symbol "drive_tone" ;
         lv2:name "Tone" ;
         lv2:default 0.5 ;
@@ -349,7 +274,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 30 ;
+        lv2:index 24 ;
         lv2:symbol "drive_level" ;
         lv2:name "Level" ;
         lv2:default 0.55 ;
@@ -359,7 +284,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 31 ;
+        lv2:index 25 ;
         lv2:symbol "drive_mix" ;
         lv2:name "Blend" ;
         lv2:default 0.6 ;
@@ -369,250 +294,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 32 ;
-        lv2:symbol "delay_on" ;
-        lv2:name "Delay On" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:toggled true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 33 ;
-        lv2:symbol "delay_sync" ;
-        lv2:name "Delay Sync" ;
-        lv2:default 1 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:toggled true ;
-        lv2:scalePoint [ rdf:value 0 ; rdfs:label "Free" ] ,
-            [ rdf:value 1 ; rdfs:label "Host" ] ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 34 ;
-        lv2:symbol "delay_div" ;
-        lv2:name "Delay Division" ;
-        lv2:default 8 ;
-        lv2:minimum 0 ;
-        lv2:maximum 8 ;
-        lv2:integer true ;
-        lv2:scalePoint [ rdf:value 0 ; rdfs:label "1/1" ] ,
-            [ rdf:value 1 ; rdfs:label "1/2" ] ,
-            [ rdf:value 2 ; rdfs:label "1/4" ] ,
-            [ rdf:value 3 ; rdfs:label "1/8" ] ,
-            [ rdf:value 4 ; rdfs:label "1/8T" ] ,
-            [ rdf:value 5 ; rdfs:label "1/16" ] ,
-            [ rdf:value 6 ; rdfs:label "1/16T" ] ,
-            [ rdf:value 7 ; rdfs:label "1/32" ] ,
-            [ rdf:value 8 ; rdfs:label "1/8D" ] ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 35 ;
-        lv2:symbol "delay_time" ;
-        lv2:name "Delay Time" ;
-        lv2:default 0.18 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 36 ;
-        lv2:symbol "delay_feedback" ;
-        lv2:name "Delay Feedback" ;
-        lv2:default 0.3 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 37 ;
-        lv2:symbol "delay_mix" ;
-        lv2:name "Delay Mix" ;
-        lv2:default 0.25 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 38 ;
-        lv2:symbol "delay_tone" ;
-        lv2:name "Delay Tone" ;
-        lv2:default 0.5 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 39 ;
-        lv2:symbol "delay_mod" ;
-        lv2:name "Delay Mod" ;
-        lv2:default 0.2 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 40 ;
-        lv2:symbol "delay_pingpong" ;
-        lv2:name "Delay Ping-Pong" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:toggled true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 41 ;
-        lv2:symbol "reverb_on" ;
-        lv2:name "Reverb On" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:toggled true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#reverb> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 42 ;
-        lv2:symbol "reverb_mode" ;
-        lv2:name "Reverb Mode" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:scalePoint [ rdf:value 0 ; rdfs:label "Plate" ] ,
-            [ rdf:value 1 ; rdfs:label "Spring" ] ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#reverb> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 43 ;
-        lv2:symbol "reverb_mix" ;
-        lv2:name "Reverb Mix" ;
-        lv2:default 0.2 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#reverb> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 44 ;
-        lv2:symbol "reverb_decay" ;
-        lv2:name "Reverb Decay" ;
-        lv2:default 0.4 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#reverb> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 45 ;
-        lv2:symbol "reverb_tone" ;
-        lv2:name "Reverb Tone" ;
-        lv2:default 0.5 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#reverb> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 46 ;
-        lv2:symbol "reverb_predelay" ;
-        lv2:name "Reverb Pre-delay" ;
-        lv2:default 0.1 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#reverb> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 47 ;
-        lv2:symbol "hq" ;
-        lv2:name "HQ" ;
-        lv2:default 1 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:toggled true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#global> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 48 ;
-        lv2:symbol "loop_pos" ;
-        lv2:name "Loop Position" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:scalePoint [ rdf:value 0 ; rdfs:label "Pre" ] ,
-            [ rdf:value 1 ; rdfs:label "Post" ] ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#global> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 49 ;
-        lv2:symbol "chorus_on" ;
-        lv2:name "Chorus On" ;
-        lv2:default 1 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:toggled true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 50 ;
-        lv2:symbol "chorus_rate" ;
-        lv2:name "Chorus Rate" ;
-        lv2:default 0.35 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 51 ;
-        lv2:symbol "chorus_depth" ;
-        lv2:name "Chorus Depth" ;
-        lv2:default 0.5 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#amp> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 52 ;
-        lv2:symbol "meter" ;
-        lv2:name "Meter" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:integer true ;
-        lv2:scalePoint [ rdf:value 0 ; rdfs:label "In/Out" ] ,
-            [ rdf:value 1 ; rdfs:label "Off" ] ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#meter> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 53 ;
+        lv2:index 26 ;
         lv2:symbol "limiter_on" ;
         lv2:name "Limiter" ;
         lv2:default 0 ;
@@ -624,7 +306,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 54 ;
+        lv2:index 27 ;
         lv2:symbol "limiter_threshold" ;
         lv2:name "Limiter Threshold" ;
         lv2:default 1 ;
@@ -634,7 +316,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 55 ;
+        lv2:index 28 ;
         lv2:symbol "user_ir_studio" ;
         lv2:name "Studio DI User IR" ;
         lv2:default 0 ;
@@ -645,7 +327,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 56 ;
+        lv2:index 29 ;
         lv2:symbol "user_ir_flip_top" ;
         lv2:name "Flip Top User IR" ;
         lv2:default 0 ;
@@ -656,7 +338,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 57 ;
+        lv2:index 30 ;
         lv2:symbol "user_ir_svt" ;
         lv2:name "SVT User IR" ;
         lv2:default 0 ;
@@ -667,7 +349,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 58 ;
+        lv2:index 31 ;
         lv2:symbol "user_ir_modern" ;
         lv2:name "Modern User IR" ;
         lv2:default 0 ;
@@ -678,51 +360,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 59 ;
-        lv2:symbol "user_ir_5" ;
-        lv2:name "User IR 5" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 63 ;
-        lv2:integer true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#cab> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 60 ;
-        lv2:symbol "user_ir_6" ;
-        lv2:name "User IR 6" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 63 ;
-        lv2:integer true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#cab> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 61 ;
-        lv2:symbol "user_ir_7" ;
-        lv2:name "User IR 7" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 63 ;
-        lv2:integer true ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#cab> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 62 ;
-        lv2:symbol "tempo" ;
-        lv2:name "Delay Tempo" ;
-        lv2:default 120 ;
-        lv2:minimum 40 ;
-        lv2:maximum 300 ;
-        units:unit units:bpm ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#delay> ;
-    ] ,
-    [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 63 ;
+        lv2:index 32 ;
         lv2:symbol "amp_bypass" ;
         lv2:name "Amp Bypass" ;
         lv2:default 0 ;
@@ -734,7 +372,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 64 ;
+        lv2:index 33 ;
         lv2:symbol "nam_on" ;
         lv2:name "NAM On" ;
         lv2:default 0 ;
@@ -746,7 +384,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 65 ;
+        lv2:index 34 ;
         lv2:symbol "nam_model" ;
         lv2:name "NAM Model" ;
         lv2:default 0 ;
@@ -757,7 +395,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 66 ;
+        lv2:index 35 ;
         lv2:symbol "nam_level" ;
         lv2:name "NAM Level" ;
         lv2:default 0.5 ;
@@ -767,7 +405,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 67 ;
+        lv2:index 36 ;
         lv2:symbol "gate_on" ;
         lv2:name "Gate On" ;
         lv2:default 0 ;
@@ -779,7 +417,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 68 ;
+        lv2:index 37 ;
         lv2:symbol "gate_thresh" ;
         lv2:name "Gate Threshold" ;
         lv2:default 0.55 ;
@@ -789,7 +427,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 69 ;
+        lv2:index 38 ;
         lv2:symbol "gate_decay" ;
         lv2:name "Gate Decay" ;
         lv2:default 0.4 ;
@@ -799,7 +437,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 70 ;
+        lv2:index 39 ;
         lv2:symbol "cab_set" ;
         lv2:name "Cabinet" ;
         lv2:default 3 ;
@@ -814,7 +452,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 71 ;
+        lv2:index 40 ;
         lv2:symbol "oct_on" ;
         lv2:name "Octave" ;
         lv2:default 0 ;
@@ -826,7 +464,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 72 ;
+        lv2:index 41 ;
         lv2:symbol "oct_level" ;
         lv2:name "Octave" ;
         lv2:default 0.35 ;
@@ -836,7 +474,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 73 ;
+        lv2:index 42 ;
         lv2:symbol "oct_dry" ;
         lv2:name "Dry" ;
         lv2:default 1 ;
@@ -846,7 +484,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 74 ;
+        lv2:index 43 ;
         lv2:symbol "oct_tone" ;
         lv2:name "Tone" ;
         lv2:default 0.5 ;
@@ -856,7 +494,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 75 ;
+        lv2:index 44 ;
         lv2:symbol "comp_on" ;
         lv2:name "Comp" ;
         lv2:default 1 ;
@@ -868,7 +506,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 76 ;
+        lv2:index 45 ;
         lv2:symbol "comp_amount" ;
         lv2:name "Amount" ;
         lv2:default 0.35 ;
@@ -878,7 +516,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 77 ;
+        lv2:index 46 ;
         lv2:symbol "comp_attack" ;
         lv2:name "Attack" ;
         lv2:default 0.35 ;
@@ -888,7 +526,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 78 ;
+        lv2:index 47 ;
         lv2:symbol "comp_release" ;
         lv2:name "Release" ;
         lv2:default 0.45 ;
@@ -898,7 +536,7 @@
     ] ,
     [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 79 ;
+        lv2:index 48 ;
         lv2:symbol "comp_mix" ;
         lv2:name "Mix" ;
         lv2:default 1 ;
@@ -907,8 +545,68 @@
         pg:group <https://github.com/tylorismusic-commits/bass-suite#comp> ;
     ] ,
     [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 49 ;
+        lv2:symbol "out_eq_low" ;
+        lv2:name "Low" ;
+        lv2:default 0.5 ;
+        lv2:minimum 0 ;
+        lv2:maximum 1 ;
+        pg:group <https://github.com/tylorismusic-commits/bass-suite#output> ;
+    ] ,
+    [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 50 ;
+        lv2:symbol "out_eq_low_mid" ;
+        lv2:name "Low Mid" ;
+        lv2:default 0.5 ;
+        lv2:minimum 0 ;
+        lv2:maximum 1 ;
+        pg:group <https://github.com/tylorismusic-commits/bass-suite#output> ;
+    ] ,
+    [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 51 ;
+        lv2:symbol "out_eq_high_mid" ;
+        lv2:name "High Mid" ;
+        lv2:default 0.5 ;
+        lv2:minimum 0 ;
+        lv2:maximum 1 ;
+        pg:group <https://github.com/tylorismusic-commits/bass-suite#output> ;
+    ] ,
+    [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 52 ;
+        lv2:symbol "out_eq_high" ;
+        lv2:name "High" ;
+        lv2:default 0.5 ;
+        lv2:minimum 0 ;
+        lv2:maximum 1 ;
+        pg:group <https://github.com/tylorismusic-commits/bass-suite#output> ;
+    ] ,
+    [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 53 ;
+        lv2:symbol "out_hpf" ;
+        lv2:name "HPF" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 1 ;
+        pg:group <https://github.com/tylorismusic-commits/bass-suite#output> ;
+    ] ,
+    [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 54 ;
+        lv2:symbol "out_lpf" ;
+        lv2:name "LPF" ;
+        lv2:default 1 ;
+        lv2:minimum 0 ;
+        lv2:maximum 1 ;
+        pg:group <https://github.com/tylorismusic-commits/bass-suite#output> ;
+    ] ,
+    [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 80 ;
+        lv2:index 55 ;
         lv2:symbol "out_peak_l" ;
         lv2:name "Output Peak Left" ;
         lv2:default 0 ;
@@ -920,7 +618,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 81 ;
+        lv2:index 56 ;
         lv2:symbol "out_peak_r" ;
         lv2:name "Output Peak Right" ;
         lv2:default 0 ;
@@ -932,7 +630,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 82 ;
+        lv2:index 57 ;
         lv2:symbol "in_peak_l" ;
         lv2:name "Input Peak Left" ;
         lv2:default 0 ;
@@ -944,7 +642,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 83 ;
+        lv2:index 58 ;
         lv2:symbol "in_peak_r" ;
         lv2:name "Input Peak Right" ;
         lv2:default 0 ;
@@ -956,7 +654,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 84 ;
+        lv2:index 59 ;
         lv2:symbol "out_vu" ;
         lv2:name "Output VU" ;
         lv2:default 0 ;
@@ -968,7 +666,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 85 ;
+        lv2:index 60 ;
         lv2:symbol "latency" ;
         lv2:name "Latency" ;
         lv2:default 0 ;
@@ -977,15 +675,6 @@
         lv2:designation lv2:latency ;
         lv2:portProperty pprops:notOnGUI ;
         pg:group <https://github.com/tylorismusic-commits/bass-suite#latency> ;
-    ] ,
-    [
-        a lv2:InputPort , atom:Sequence ;
-        lv2:index 86 ;
-        lv2:symbol "time" ;
-        lv2:name "Time" ;
-        lv2:designation time:position ;
-        atom:supports time:Position ;
-        pg:group <https://github.com/tylorismusic-commits/bass-suite#time> ;
     ] .
 
 
@@ -994,14 +683,6 @@
 <https://github.com/tylorismusic-commits/bass-suite#cab> a pg:Group ; lv2:name "Cab" .
 
 <https://github.com/tylorismusic-commits/bass-suite#drive> a pg:Group ; lv2:name "Drive" .
-
-<https://github.com/tylorismusic-commits/bass-suite#delay> a pg:Group ; lv2:name "Delay" .
-
-<https://github.com/tylorismusic-commits/bass-suite#reverb> a pg:Group ; lv2:name "Reverb" .
-
-<https://github.com/tylorismusic-commits/bass-suite#global> a pg:Group ; lv2:name "Global" .
-
-<https://github.com/tylorismusic-commits/bass-suite#meter> a pg:Group ; lv2:name "Meter" .
 
 <https://github.com/tylorismusic-commits/bass-suite#limiter> a pg:Group ; lv2:name "Limiter" .
 
@@ -1013,6 +694,8 @@
 
 <https://github.com/tylorismusic-commits/bass-suite#comp> a pg:Group ; lv2:name "Comp" .
 
-<https://github.com/tylorismusic-commits/bass-suite#latency> a pg:Group ; lv2:name "Latency" .
+<https://github.com/tylorismusic-commits/bass-suite#output> a pg:Group ; lv2:name "Output" .
 
-<https://github.com/tylorismusic-commits/bass-suite#time> a pg:Group ; lv2:name "Time" .
+<https://github.com/tylorismusic-commits/bass-suite#meter> a pg:Group ; lv2:name "Meter" .
+
+<https://github.com/tylorismusic-commits/bass-suite#latency> a pg:Group ; lv2:name "Latency" .

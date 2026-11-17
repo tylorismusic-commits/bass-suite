@@ -63,10 +63,7 @@ public:
     if (b_) b_->setNamModel(model);
   }
 
-  void setTempo(float bpm, bool valid) noexcept {
-    if (a_) a_->setTempo(bpm, valid);
-    if (b_) b_->setTempo(bpm, valid);
-  }
+
 
   void reset() noexcept {
     if (a_) a_->reset();

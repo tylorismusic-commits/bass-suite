@@ -178,53 +178,6 @@ int main() {
     }
   }
 
-  // Tempo sync: a 1/4-note delay must follow the supplied BPM.
-  {
-    auto echoMs = [](float bpm) {
-      bass::Controls c;
-      c.delayOn = true;
-      c.delaySync = true;
-      c.delayDiv = 2;  // 1/4 note
-      c.delayFeedback = 0.0f;
-      c.delayMix = 1.0f;
-      c.delayTone = 1.0f;
-      c.delayMod = 0.0f;
-      bass::Delay d;
-      d.prepare(48000.0f);
-      d.setTargets(c, bpm);
-      for (int i = 0; i < 24000; ++i) {  // let the time smoother settle
-        float l = 0.0f, r = 0.0f;
-        d.process(l, r);
-      }
-      float l = 0.0f, r = 0.0f;
-      int peakIdx = 0;
-      float peak = 0.0f;
-      for (int i = 0; i < 72000; ++i) {
-        if (i == 0) {
-          l = r = 1.0f;
-        } else {
-          l = r = 0.0f;
-        }
-        d.process(l, r);
-        if (std::fabs(l) > peak) {
-          peak = std::fabs(l);
-          peakIdx = i;
-        }
-      }
-      return static_cast<float>(peakIdx) * 1000.0f / 48000.0f;
-    };
-    const float t120 = echoMs(120.0f);
-    const float t60 = echoMs(60.0f);
-    if (std::fabs(t120 - 500.0f) > 20.0f) {
-      std::fprintf(stderr, "1/4 delay at 120 BPM is %.1f ms, expected 500\n", t120);
-      return 1;
-    }
-    if (std::fabs(t60 - 1000.0f) > 30.0f) {
-      std::fprintf(stderr, "1/4 delay at 60 BPM is %.1f ms, expected 1000\n", t60);
-      return 1;
-    }
-  }
-
   // The host calls prepare() again in activate() after the constructor has
   // already applied controls.  That second prepare clears the convolver and
   // must re-install the current IR, otherwise the first session loads without
@@ -331,8 +284,6 @@ int main() {
       b.set(bass::P_MODEL, 3.0);
       b.set(bass::P_CAB_BYPASS, 1.0);
       b.set(bass::P_OD_ON, 0.0);
-      b.set(bass::P_DELAY_ON, 0.0);
-      b.set(bass::P_REVERB_ON, 0.0);
       b.set(bass::P_GAIN, 0.4);
       b.set(bass::P_GATE_ON, gateOn ? 1.0 : 0.0);
       b.set(bass::P_GATE_THRESH, 0.8);
@@ -407,6 +358,53 @@ int main() {
     }
   }
 
+  // Output EQ and filters: a high HPF cuts the low end, a low LPF cuts the
+  // top, and a low-shelf boost lifts 60 Hz.
+  {
+    auto measure = [](float lowEq, float hpf, float lpf, float toneHz) {
+      bass::Shared o;
+      o.set(bass::P_MODEL, 2.0);
+      o.set(bass::P_CAB_BYPASS, 1.0);
+      o.set(bass::P_COMP_ON, 0.0);
+      o.set(bass::P_OD_ON, 0.0);
+      o.set(bass::P_OCT_ON, 0.0);
+      o.set(bass::P_GATE_ON, 0.0);
+      o.set(bass::P_GAIN, 0.4);
+      o.set(bass::P_OUT_EQ_LOW, lowEq);
+      o.set(bass::P_OUT_HPF, hpf);
+      o.set(bass::P_OUT_LPF, lpf);
+      bass::Engine e;
+      e.prepare(48000.0f);
+      e.setControls(bass::controlsFrom(o));
+      std::vector<float> l(24000), r(24000);
+      for (int i = 0; i < 24000; ++i) {
+        l[i] = r[i] = 0.1f * std::sin(2.0 * 3.14159265 * toneHz * i / 48000.0);
+      }
+      bass::Meters m;
+      e.process(l.data(), r.data(), 24000, m);
+      double energy = 0.0;
+      for (int i = 12000; i < 24000; ++i) energy += l[i] * l[i];
+      return std::sqrt(energy / 12000.0);
+    };
+    const double lowOpen = measure(0.5f, 0.0f, 1.0f, 60.0f);
+    const double lowCut = measure(0.5f, 0.75f, 1.0f, 60.0f);
+    const double lowBoost = measure(0.85f, 0.0f, 1.0f, 60.0f);
+    const double topOpen = measure(0.5f, 0.0f, 1.0f, 10000.0f);
+    const double topCut = measure(0.5f, 0.0f, 0.25f, 10000.0f);
+    if (!(lowCut < lowOpen * 0.7)) {
+      std::fprintf(stderr, "output HPF did not cut the low end\n");
+      return 1;
+    }
+    if (!(lowBoost > lowOpen * 1.4)) {
+      std::fprintf(stderr, "output low shelf did not boost\n");
+      return 1;
+    }
+    if (!(topCut < topOpen * 0.4)) {
+      std::fprintf(stderr, "output LPF did not cut the top\n");
+      return 1;
+    }
+  }
+
   // Every model must produce finite output and a plausible meter.
   for (int model = 0; model < 4; ++model) {
     shared.set(bass::P_MODEL, static_cast<double>(model));
@@ -423,10 +421,8 @@ int main() {
   // Extreme settings must stay finite and bounded (no NaN, no runaway) at
   // both oversampling rates.
   for (int model = 0; model < 4; ++model) {
-    for (int hq = 0; hq < 2; ++hq) {
     bass::Shared x;
     x.set(bass::P_MODEL, static_cast<double>(model));
-    x.set(bass::P_HQ, static_cast<double>(hq));
     x.set(bass::P_GAIN, 1.0);
     x.set(bass::P_MASTER, 1.0);
     x.set(bass::P_OUTPUT, 0.7);
@@ -458,60 +454,10 @@ int main() {
       peak = std::max(peak, std::fabs(v));
     }
     if (peak > 50.0f) {
-      std::fprintf(stderr, "runaway output on model %d (hq=%d): %.1f\n", model,
-                   hq, static_cast<double>(peak));
-      return 1;
-    }
-    }
-  }
-
-  // Delay/reverb extremes: high feedback, full wet, post-cab loop.
-  {
-    bass::Shared x;
-    x.set(bass::P_MODEL, 3.0);
-    x.set(bass::P_DELAY_ON, 1.0);
-    x.set(bass::P_DELAY_SYNC, 0.0);
-    x.set(bass::P_DELAY_TIME, 1.0);
-    x.set(bass::P_DELAY_FEEDBACK, 0.9);
-    x.set(bass::P_DELAY_MIX, 1.0);
-    x.set(bass::P_REVERB_ON, 1.0);
-    x.set(bass::P_REVERB_DECAY, 1.0);
-    x.set(bass::P_REVERB_MIX, 1.0);
-    x.set(bass::P_REVERB_PREDELAY, 1.0);
-    x.set(bass::P_LOOP_POS, 1.0);
-    bass::Engine e;
-    e.prepare(48000.0f);
-    e.setControls(bass::controlsFrom(x));
-    std::vector<float> xl(48000), xr(48000);
-    for (int i = 0; i < 48000; ++i) {
-      xl[i] = 0.2f * std::sin(2.0 * 3.14159265 * 220.0 * i / 48000.0);
-      xr[i] = xl[i];
-    }
-    bass::Meters xm;
-    e.process(xl.data(), xr.data(), 48000, xm);
-    if (!finiteBuffer(xl, xr)) {
-      std::fprintf(stderr, "non-finite output in FX loop\n");
-      return 1;
-    }
-    float peak = 0.0f;
-    for (float v : xl) {
-      peak = std::max(peak, std::fabs(v));
-    }
-    if (peak > 50.0f) {
-      std::fprintf(stderr, "FX loop runaway: %.1f\n",
+      std::fprintf(stderr, "runaway output on model %d: %.1f\n", model,
                    static_cast<double>(peak));
       return 1;
     }
-  }
-
-  // Tempo state reaches the engine.
-  engine.setTempo(140.0f, true);
-  shared.set(bass::P_DELAY_ON, 1.0);
-  engine.setControls(bass::controlsFrom(shared));
-  engine.process(l.data(), r.data(), 512, meters);
-  if (meters.bpm < 139.0f || meters.bpm > 141.0f || !meters.hostTempo) {
-    std::fprintf(stderr, "tempo not propagated\n");
-    return 1;
   }
 
   std::printf("amp_dsp: ok\n");

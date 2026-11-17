@@ -138,7 +138,7 @@ public:
   }
 
   std::shared_ptr<const UserIrBank> bank() const {
-    return std::atomic_load(&bank_);
+    return bank_.load();
   }
 
   std::vector<std::string> names() const {
@@ -245,7 +245,7 @@ public:
       return;
     }
     const std::vector<std::string> names = listUserIrFiles(dir);
-    const auto old = std::atomic_load(&bank_);
+    const auto old = bank_.load();
 
     auto bank = std::make_shared<UserIrBank>();
     bank->entries.reserve(names.size());
@@ -307,7 +307,7 @@ public:
       std::lock_guard<std::mutex> lock(mutex_);
       stamps_ = std::move(stamps);
     }
-    std::atomic_store(&bank_, std::shared_ptr<const UserIrBank>(bank));
+    bank_.store(std::shared_ptr<const UserIrBank>(bank));
   }
 
 private:
@@ -350,7 +350,7 @@ private:
   float sr_ = 48000.0f;
   std::thread thread_;
   std::atomic<bool> quit_{true};
-  std::shared_ptr<const UserIrBank> bank_;
+  std::atomic<std::shared_ptr<const UserIrBank>> bank_;
   std::vector<Stamp> stamps_;
 };
 

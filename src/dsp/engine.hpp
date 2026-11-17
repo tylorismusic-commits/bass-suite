@@ -18,10 +18,8 @@
 #include "comp_pedal.hpp"
 #include "octave.hpp"
 #include "common.hpp"
-#include "delay.hpp"
 #include "nam_model.hpp"
 #include "params.hpp"
-#include "reverb.hpp"
 #include "oversample.hpp"
 #include "power_amp.hpp"
 #include "ts9.hpp"
@@ -44,8 +42,6 @@ public:
     comp_.prepare(sr_);
     oct_.prepare(sr_);
     cabConvolver_.prepare(4096);
-    delay_.prepare(sr_);
-    reverb_.prepare(sr_);
     dcPreL_.set(20.0f, sr_);
     dcPreR_.set(20.0f, sr_);
     dcPostL_.set(20.0f, sr_);
@@ -182,7 +178,7 @@ public:
     ps.sag = r.powerSag;
     ps.output = r.outputTrim;
     ps.useTable = r.powerTable;
-    const int os = c.hq ? 4 : 2;
+    const int os = 4;
     if (os != powerOs_) {
       powerL_.prepare(sr_ * static_cast<float>(os), ps);
       powerR_.prepare(sr_ * static_cast<float>(os), ps);
@@ -282,15 +278,16 @@ public:
     syncUserIrBank();
     syncNamModel();
     updateCab(c);
+    applyOutputEq(c);
     updateCabIR();
   }
 
   void setUserIrBank(std::shared_ptr<const UserIrBank> bank) noexcept {
-    std::atomic_store(&userBankPending_, std::move(bank));
+    userBankPending_.store(std::move(bank));
   }
 
   void setNamModel(std::shared_ptr<NamDSP> model) noexcept {
-    std::atomic_store(&namPending_, std::move(model));
+    namPending_.store(std::move(model));
   }
 
   bool cabReady() const noexcept { return cabConvolver_.active(); }
@@ -320,10 +317,7 @@ public:
     return ok;
   }
 
-  void setTempo(float bpm, bool valid) noexcept {
-    bpm_ = (std::isfinite(bpm) && bpm > 1.0f) ? bpm : 120.0f;
-    hostTempo_ = valid;
-  }
+
 
   void gateSample(float& l, float& r, bool on) noexcept {
     if (!on) {
@@ -342,7 +336,7 @@ public:
 
   // Power off is a true bypass: the dry input already sits in the output
   // buffers, so leave it untouched and only refresh the meters.  No cab, no
-  // delay tails, no output trim, no host-side enable is consulted.
+  // tails, no output trim, no host-side enable is consulted.
   void bypass(float* left, float* right, int frames,
               Meters& meters) noexcept {
     float inPeakL = 0.0f;
@@ -366,8 +360,6 @@ public:
     meters.outPeakRDb = meters.inPeakRDb;
     meters.outPeakDb = meters.inPeakDb;
     meters.outVuDb = gainToDb(std::sqrt(vuPower_)) + 18.0f;
-    meters.bpm = hostTempo_ ? bpm_ : controls_.bpm;
-    meters.hostTempo = hostTempo_;
   }
 
   void processNam(float* left, float* right, int frames,
@@ -376,9 +368,6 @@ public:
     const float cabLevel =
         c.cabBypass ? 1.0f : dbToGain(cabLevelDb(c.cabLevel));
     const float namTrim = dbToGain(-12.0f + 24.0f * c.namLevel);
-    const float tempo = hostTempo_ ? bpm_ : c.bpm;
-    delay_.setTargets(c, tempo);
-    reverb_.setTargets(c);
     float inPeakL = 0.0f;
     float inPeakR = 0.0f;
     float outPeakL = 0.0f;
@@ -433,10 +422,6 @@ public:
     for (int i = 0; i < frames; ++i) {
       float l = left[i];
       float r = right[i];
-      if (c.loopPos == 0) {
-        delay_.process(l, r);
-        reverb_.process(l, r);
-      }
       l = dcPostL_.process(l);
       r = dcPostR_.process(r);
       if (!c.cabBypass) {
@@ -453,10 +438,19 @@ public:
         l *= cabLevel;
         r *= cabLevel;
       }
-      if (c.loopPos == 1) {
-        delay_.process(l, r);
-        reverb_.process(l, r);
-      }
+      l = outLowL_.process(l);
+      r = outLowR_.process(r);
+      l = outLowMidL_.process(l);
+      r = outLowMidR_.process(r);
+      l = outHighMidL_.process(l);
+      r = outHighMidR_.process(r);
+      l = outHighL_.process(l);
+      r = outHighR_.process(r);
+      l = outHpL_.process(l);
+      r = outHpR_.process(r);
+      l = outLpL_.process(l);
+      r = outLpR_.process(r);
+
       const float out = outputSmooth_.next();
       const float outGain = dbToGain((out - 0.5f) * 24.0f);
       l *= outGain;
@@ -486,8 +480,6 @@ public:
     meters.outPeakRDb = gainToDb(outPeakR);
     meters.outPeakDb = std::max(meters.outPeakLDb, meters.outPeakRDb);
     meters.outVuDb = gainToDb(std::sqrt(vuPower_)) + 18.0f;
-    meters.bpm = tempo;
-    meters.hostTempo = hostTempo_;
   }
 
   void process(float* left, float* right, int frames, Meters& meters) noexcept {
@@ -511,9 +503,6 @@ public:
     const float makeup = dbToGain(rec.makeupDb);
     const float cabLevel = c.cabBypass ? 1.0f : dbToGain(cabLevelDb(c.cabLevel));
 
-    const float tempo = hostTempo_ ? bpm_ : c.bpm;
-    delay_.setTargets(c, tempo);
-    reverb_.setTargets(c);
 
     for (int i = 0; i < frames; ++i) {
       float dryL = left[i];
@@ -593,10 +582,6 @@ public:
       r = dcPreR_.process(r);
 
       // FX loop: authentic default is between the preamp and the power amp.
-      if (c.loopPos == 0) {
-        delay_.process(l, r);
-        reverb_.process(l, r);
-      }
 
       if (!c.ampBypass && !rec.solidState) {
         if (powerOs_ == 4) {
@@ -690,10 +675,19 @@ public:
       }
 
       // Post-cab loop option.
-      if (c.loopPos == 1) {
-        delay_.process(l, r);
-        reverb_.process(l, r);
-      }
+
+      l = outLowL_.process(l);
+      r = outLowR_.process(r);
+      l = outLowMidL_.process(l);
+      r = outLowMidR_.process(r);
+      l = outHighMidL_.process(l);
+      r = outHighMidR_.process(r);
+      l = outHighL_.process(l);
+      r = outHighR_.process(r);
+      l = outHpL_.process(l);
+      r = outHpR_.process(r);
+      l = outLpL_.process(l);
+      r = outLpR_.process(r);
 
       const float out = outputSmooth_.next();
       const float outGain = dbToGain((out - 0.5f) * 24.0f);
@@ -751,8 +745,6 @@ public:
     meters.outPeakRDb = gainToDb(outPeakR);
     meters.outPeakDb = std::max(meters.outPeakLDb, meters.outPeakRDb);
     meters.outVuDb = gainToDb(std::sqrt(vuPower_)) + 18.0f;
-    meters.bpm = hostTempo_ ? bpm_ : c.bpm;
-    meters.hostTempo = hostTempo_;
   }
 
   void reset() noexcept {
@@ -769,14 +761,24 @@ public:
     if (activeNam_) {
       activeNam_->reset();
     }
-    delay_.reset();
-    reverb_.reset();
     dcPreL_.reset();
     dcPreR_.reset();
     dcPostL_.reset();
     dcPostR_.reset();
     cabHpL_.reset();
     cabHpR_.reset();
+    outLowL_.reset();
+    outLowR_.reset();
+    outLowMidL_.reset();
+    outLowMidR_.reset();
+    outHighMidL_.reset();
+    outHighMidR_.reset();
+    outHighL_.reset();
+    outHighR_.reset();
+    outHpL_.reset();
+    outHpR_.reset();
+    outLpL_.reset();
+    outLpR_.reset();
     cabLpL_.reset();
     cabLpR_.reset();
     powerL_.reset();
@@ -836,17 +838,38 @@ private:
   }
 
   void syncUserIrBank() noexcept {
-    auto bank = std::atomic_load(&userBankPending_);
+    auto bank = userBankPending_.load();
     if (bank != activeUserBank_) {
       activeUserBank_ = std::move(bank);
     }
   }
 
   void syncNamModel() noexcept {
-    auto model = std::atomic_load(&namPending_);
+    auto model = namPending_.load();
     if (model != activeNam_) {
       activeNam_ = std::move(model);
     }
+  }
+
+  void applyOutputEq(const Controls& c) noexcept {
+    const float low = (c.outEqLow - 0.5f) * 24.0f;
+    const float lowMid = (c.outEqLowMid - 0.5f) * 24.0f;
+    const float highMid = (c.outEqHighMid - 0.5f) * 24.0f;
+    const float high = (c.outEqHigh - 0.5f) * 24.0f;
+    outLowL_.lowShelf(80.0f, low, 0.7f, sr_);
+    outLowR_.lowShelf(80.0f, low, 0.7f, sr_);
+    outLowMidL_.peak(250.0f, lowMid, 0.9f, sr_);
+    outLowMidR_.peak(250.0f, lowMid, 0.9f, sr_);
+    outHighMidL_.peak(1200.0f, highMid, 0.9f, sr_);
+    outHighMidR_.peak(1200.0f, highMid, 0.9f, sr_);
+    outHighL_.highShelf(6000.0f, high, 0.7f, sr_);
+    outHighR_.highShelf(6000.0f, high, 0.7f, sr_);
+    const float hp = outHpfHz(c.outHpf);
+    const float lp = outLpfHz(c.outLpf);
+    outHpL_.highPass(hp, 0.707f, sr_);
+    outHpR_.highPass(hp, 0.707f, sr_);
+    outLpL_.lowPass(lp, 0.707f, sr_);
+    outLpR_.lowPass(lp, 0.707f, sr_);
   }
 
   void updateCabIR() noexcept {
@@ -903,8 +926,6 @@ private:
   float switchGain_ = 1.0f;
   float switchStep_ = 1.0f;
   float switchInStep_ = 0.001f;
-  float bpm_ = 120.0f;
-  bool hostTempo_ = false;
   float vuCoeff_ = 0.0f;
   float vuPower_ = 0.0f;
   ToneStackSpec toneSpec_;
@@ -919,13 +940,14 @@ private:
   OctavePedal oct_;
   CabBank cabBank_;
   CabConvolver cabConvolver_;
+  Biquad outLowL_, outLowR_, outLowMidL_, outLowMidR_;
+  Biquad outHighMidL_, outHighMidR_, outHighL_, outHighR_;
+  Biquad outHpL_, outHpR_, outLpL_, outLpR_;
   const CabIR* activeCab_ = nullptr;
-  std::shared_ptr<const UserIrBank> userBankPending_;
+  std::atomic<std::shared_ptr<const UserIrBank>> userBankPending_;
   std::shared_ptr<const UserIrBank> activeUserBank_;
-  std::shared_ptr<NamDSP> namPending_;
+  std::atomic<std::shared_ptr<NamDSP>> namPending_;
   std::shared_ptr<NamDSP> activeNam_;
-  Delay delay_;
-  Reverb reverb_;
   HighPass2 dcPreL_;
   HighPass2 dcPreR_;
   HighPass2 dcPostL_;

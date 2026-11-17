@@ -166,7 +166,6 @@ std::string buildPluginTtl() {
   out << "@prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .\n";
   out << "@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n";
   out << "@prefix atom: <http://lv2plug.in/ns/ext/atom#> .\n";
-  out << "@prefix time: <http://lv2plug.in/ns/ext/time#> .\n";
   out << "\n";
   out << "<" << kUri << ">\n";
   out << "    a lv2:Plugin ;\n";
@@ -243,21 +242,7 @@ std::string buildPluginTtl() {
     ports.push_back(p.str());
   }
 
-  {
-    // Host transport position, including tempo.  Hosts that support
-    // LV2 time send a time:Position object on this port.
-    std::ostringstream p;
-    p << "    [\n";
-    p << "        a lv2:InputPort , atom:Sequence ;\n";
-    p << "        lv2:index " << index++ << " ;\n";
-    p << "        lv2:symbol \"time\" ;\n";
-    p << "        lv2:name \"Time\" ;\n";
-    p << "        lv2:designation time:position ;\n";
-    p << "        atom:supports time:Position ;\n";
-    p << "        pg:group <" << groupUri("Time") << "> ;\n";
-    p << "    ]";
-    ports.push_back(p.str());
-  }
+
 
   for (size_t i = 0; i < ports.size(); ++i) {
     out << ports[i];
@@ -281,7 +266,6 @@ std::string buildPluginTtl() {
   }
   addGroup("Meter");
   addGroup("Latency");
-  addGroup("Time");
   out << "\n" << groups.str();
   return out.str();
 }

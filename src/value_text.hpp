@@ -47,10 +47,6 @@ inline std::string formatParamValue(const Shared& shared, uint32_t id,
     case P_MASTER:
       std::snprintf(buf, sizeof(buf), "%.1f dB", -18.0 + 18.0 * value);
       return buf;
-    case P_DELAY_TIME:
-      std::snprintf(buf, sizeof(buf), "%.0f ms",
-                    delayTimeMs(static_cast<float>(value)));
-      return buf;
     case P_CAB_LEVEL:
       std::snprintf(buf, sizeof(buf), "%+.1f dB",
                     cabLevelDb(static_cast<float>(value)));
@@ -63,14 +59,8 @@ inline std::string formatParamValue(const Shared& shared, uint32_t id,
       std::snprintf(buf, sizeof(buf), "%.0f Hz",
                     cabHighCutHz(static_cast<float>(value)));
       return buf;
-    case P_REVERB_PREDELAY:
-      std::snprintf(buf, sizeof(buf), "%.0f ms", value * 200.0);
-      return buf;
     case P_LIMITER_THRESH:
       std::snprintf(buf, sizeof(buf), "%.1f dB", -24.0 + 24.0 * value);
-      return buf;
-    case P_BPM:
-      std::snprintf(buf, sizeof(buf), "%.0f BPM", value);
       return buf;
     case P_NAM_LEVEL:
       std::snprintf(buf, sizeof(buf), "%+.1f dB", -12.0 + 24.0 * value);
@@ -86,16 +76,20 @@ inline std::string formatParamValue(const Shared& shared, uint32_t id,
     case P_USER_IR_1:
     case P_USER_IR_2:
     case P_USER_IR_3:
-    case P_USER_IR_4:
-    case P_USER_IR_5:
-    case P_USER_IR_6: {
-      const int index = static_cast<int>(std::lround(value));
-      if (index <= 0) {
-        return "None";
-      }
-      std::snprintf(buf, sizeof(buf), "%d", index);
+    case P_OUT_EQ_LOW:
+    case P_OUT_EQ_LOW_MID:
+    case P_OUT_EQ_HIGH_MID:
+    case P_OUT_EQ_HIGH:
+      std::snprintf(buf, sizeof(buf), "%+.1f dB", (value - 0.5) * 24.0);
       return buf;
-    }
+    case P_OUT_HPF:
+      std::snprintf(buf, sizeof(buf), "%.0f Hz",
+                    outHpfHz(static_cast<float>(value)));
+      return buf;
+    case P_OUT_LPF:
+      std::snprintf(buf, sizeof(buf), "%.0f Hz",
+                    outLpfHz(static_cast<float>(value)));
+      return buf;
     default:
       break;
   }
@@ -165,26 +159,22 @@ inline bool parseParamValue(const Shared&, uint32_t id,
       value = (numeric + 80.0) / 60.0;
     }
   } else if (suffix == "hz") {
-    if (id == P_CAB_LOWCUT) {
+    if (id == P_OUT_HPF) {
+      value = std::log(std::max(numeric, 1.0) / 20.0) / std::log(15.0);
+    } else if (id == P_OUT_LPF) {
+      value = std::log(std::max(numeric, 1.0) / 2000.0) / std::log(10.0);
+    } else if (id == P_CAB_LOWCUT) {
       value = std::log(std::max(numeric, 1.0) / 20.0) / std::log(15.0);
     } else if (id == P_CAB_HIGHCUT) {
       value = std::log(std::max(numeric, 1.0) / 2000.0) / std::log(10.0);
     }
   } else if (suffix == "ms") {
     switch (id) {
-      case P_DELAY_TIME:
-        value = std::sqrt(std::max(numeric - 20.0, 0.0) / 1980.0);
-        break;
-      case P_REVERB_PREDELAY: value = numeric / 200.0; break;
       case P_GATE_DECAY: value = (numeric - 20.0) / 980.0; break;
       default: break;
     }
   } else if (suffix == "s" || suffix == "sec") {
-    if (id == P_DELAY_TIME) {
-      value = std::sqrt(std::max(numeric * 1000.0 - 20.0, 0.0) / 1980.0);
-    } else if (id == P_REVERB_PREDELAY) {
-      value = numeric * 5.0;
-    } else if (id == P_GATE_DECAY) {
+    if (id == P_GATE_DECAY) {
       value = (numeric * 1000.0 - 20.0) / 980.0;
     }
   } else if (suffix == "%" || suffix == "pct") {
@@ -200,10 +190,6 @@ inline bool parseParamValue(const Shared&, uint32_t id,
       case P_LIMITER_THRESH: value = (numeric + 24.0) / 24.0; break;
       case P_NAM_LEVEL: value = (numeric + 12.0) / 24.0; break;
       case P_GATE_THRESH: value = (numeric + 80.0) / 60.0; break;
-      case P_DELAY_TIME:
-        value = std::sqrt(std::max(numeric - 20.0, 0.0) / 1980.0);
-        break;
-      case P_REVERB_PREDELAY: value = numeric / 200.0; break;
       case P_GATE_DECAY: value = (numeric - 20.0) / 980.0; break;
       case P_CAB_LOWCUT:
         value = std::log(std::max(numeric, 1.0) / 20.0) / std::log(15.0);
@@ -211,7 +197,6 @@ inline bool parseParamValue(const Shared&, uint32_t id,
       case P_CAB_HIGHCUT:
         value = std::log(std::max(numeric, 1.0) / 2000.0) / std::log(10.0);
         break;
-      case P_BPM: value = numeric; break;
       default:
         if (s.min >= 0.0 && s.max <= 1.0) {
           value = numeric <= 10.0 ? numeric / 10.0 : numeric / 100.0;

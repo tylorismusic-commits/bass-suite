@@ -19,6 +19,7 @@ bass
   → amp (Studio DI / Flip Top / SVT / Modern)
        or a NAM capture
   → cabinet IR
+  → output EQ + HPF/LPF
   → master / output trim
   → limiter
 ```
@@ -63,6 +64,14 @@ The plugin starts on **SVT + 8×10**, the classic big-bass starting point.
 - A capture replaces the parametric preamp/power amp; Comp, Drive, cab and
   output remain available.
 
+### OUT
+
+![Bass Suite — output](docs/screenshots/out.png)
+
+- 4-band output EQ: Low, Low Mid, High Mid, High.
+- HPF and LPF with a live response curve.
+- Limiter with threshold, plus Output trim and stereo meters.
+
 ## Build
 
 Requires CMake 3.16+, a C++17/C++20 compiler, Cairo, FreeType, X11, LV2,
@@ -94,15 +103,16 @@ reference IR is bundled. See `assets/irs/README.md`.
 
 0.1.0 is the first working vertical slice:
 
-- 4 amps, 4 cabs, Comp/Octave/Drive, user IRs, NAM, CLAP + LV2.
+- 4 amps, 4 cabs, Comp/Octave/Drive, user IRs, NAM, OUT page, CLAP + LV2.
 - 1040×640 panel, resizable 0.5×–2×.
 - Tests: DSP, panel, layout, geometry, TTL, CLAP and LV2 host tests.
+- Unused Amp Suite delay/reverb code and guitar-only parameters removed.
 
 Next:
 
-- Output page with 4-band EQ, HPF/LPF and a larger limiter section.
 - Amp voicing pass against reference recordings.
-- Preset tuning and more cabs.
+- More preset tuning and additional cabs.
+- Optional captures/IR packs.
 
 Known limits:
 

@@ -11,8 +11,6 @@
 
 int main(int argc, char** argv) {
   const bool od = argc > 1 && std::strcmp(argv[1], "--od") == 0;
-  const bool fx = argc > 1 && std::strcmp(argv[1], "--fx") == 0;
-  const bool post = argc > 2 && std::strcmp(argv[2], "--post") == 0;
   constexpr float sr = 48000.0f;
   constexpr int n = 48000;
   for (int model = 0; model < 4; ++model) {
@@ -29,15 +27,6 @@ int main(int argc, char** argv) {
     s.set(bass::P_MASTER, 0.5);
     s.set(bass::P_OUTPUT, 0.5);
     s.set(bass::P_CAB_BYPASS, 0.0);
-    if (fx) {
-      s.set(bass::P_DELAY_ON, 1.0);
-      s.set(bass::P_DELAY_MIX, 0.35);
-      s.set(bass::P_DELAY_SYNC, 1.0);
-      s.set(bass::P_DELAY_DIV, 8.0);
-      s.set(bass::P_REVERB_ON, 1.0);
-      s.set(bass::P_REVERB_MIX, 0.3);
-      s.set(bass::P_LOOP_POS, post ? 1.0 : 0.0);
-    }
 
     bass::Engine e;
     e.prepare(sr);

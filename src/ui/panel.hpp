@@ -38,8 +38,6 @@ struct PanelState {
   float outPeakDb = -120.0f;
   uint32_t lastMeterSerial = 0;
   int meterIdleTicks = 0;
-  float bpm = 120.0f;
-  bool hostTempo = false;
   std::vector<std::string> userIrs;
   int userIrScroll = 0;
   int userIrScanTicks = 60;
@@ -149,6 +147,8 @@ private:
   void drawPedalPage(cairo_t* cr, const Shared& shared,
                      const PanelState& state) const;
   void drawCabPage(cairo_t* cr, const Shared& shared,
+                   const PanelState& state) const;
+  void drawOutPage(cairo_t* cr, const Shared& shared,
                    const PanelState& state) const;
   void drawFooter(cairo_t* cr, const Shared& shared,
                   const PanelState& state) const;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(bass_suite VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -61,7 +61,7 @@ target_link_libraries(bass_suite PRIVATE
   PkgConfig::CAIRO PkgConfig::FREETYPE PkgConfig::X11
   PkgConfig::SAMPLERATE nam_core
   Threads::Threads ${CMAKE_DL_LIBS})
-target_compile_features(bass_suite PRIVATE cxx_std_17)
+target_compile_features(bass_suite PRIVATE cxx_std_20)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(bass_suite PRIVATE -Wall -Wextra -fvisibility=hidden)
 endif()
@@ -101,7 +101,7 @@ target_include_directories(bass_suite_lv2 PRIVATE
   "${CMAKE_SOURCE_DIR}/src"
   ${BASS_GUITARIX_INCLUDES})
 target_link_libraries(bass_suite_lv2 PRIVATE PkgConfig::LV2 PkgConfig::SAMPLERATE nam_core Threads::Threads)
-target_compile_features(bass_suite_lv2 PRIVATE cxx_std_17)
+target_compile_features(bass_suite_lv2 PRIVATE cxx_std_20)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(bass_suite_lv2 PRIVATE -Wall -Wextra -fvisibility=hidden)
 endif()
@@ -120,7 +120,7 @@ target_include_directories(bass_suite_ui PRIVATE
 target_link_libraries(bass_suite_ui PRIVATE
   PkgConfig::LV2 PkgConfig::CAIRO PkgConfig::FREETYPE PkgConfig::X11
   Threads::Threads ${CMAKE_DL_LIBS})
-target_compile_features(bass_suite_ui PRIVATE cxx_std_17)
+target_compile_features(bass_suite_ui PRIVATE cxx_std_20)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(bass_suite_ui PRIVATE -Wall -Wextra -fvisibility=hidden)
 endif()
@@ -133,7 +133,7 @@ set_target_properties(bass_suite_ui PROPERTIES
 # Metadata is generated from params.hpp/presets.hpp.
 add_executable(bass_ttl_gen tools/gen_ttl.cpp)
 target_include_directories(bass_ttl_gen PRIVATE "${CMAKE_SOURCE_DIR}/src")
-target_compile_features(bass_ttl_gen PRIVATE cxx_std_17)
+target_compile_features(bass_ttl_gen PRIVATE cxx_std_20)
 
 add_custom_target(bass_lv2_ttl ALL
   COMMAND $<TARGET_FILE:bass_ttl_gen> --root "${CMAKE_SOURCE_DIR}"
@@ -170,7 +170,7 @@ target_include_directories(bass_dsp_test PRIVATE
 target_link_libraries(bass_dsp_test PRIVATE PkgConfig::SAMPLERATE nam_core Threads::Threads)
 target_compile_definitions(bass_dsp_test PRIVATE
   BASS_TEST_ASSETS="${CMAKE_SOURCE_DIR}/assets/irs")
-target_compile_features(bass_dsp_test PRIVATE cxx_std_17)
+target_compile_features(bass_dsp_test PRIVATE cxx_std_20)
 add_test(NAME bass_dsp COMMAND bass_dsp_test)
 
 add_executable(bass_user_ir_test test/test_user_ir.cpp ${BASS_DSP_SOURCES})
@@ -178,7 +178,7 @@ target_include_directories(bass_user_ir_test PRIVATE
   "${CMAKE_SOURCE_DIR}/src"
   ${BASS_GUITARIX_INCLUDES})
 target_link_libraries(bass_user_ir_test PRIVATE PkgConfig::SAMPLERATE nam_core Threads::Threads)
-target_compile_features(bass_user_ir_test PRIVATE cxx_std_17)
+target_compile_features(bass_user_ir_test PRIVATE cxx_std_20)
 add_test(NAME bass_user_ir COMMAND bass_user_ir_test)
 
 add_executable(bass_nam_test test/test_nam.cpp)
@@ -186,31 +186,31 @@ target_include_directories(bass_nam_test PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(bass_nam_test PRIVATE PkgConfig::SAMPLERATE nam_core Threads::Threads)
 target_compile_definitions(bass_nam_test PRIVATE
   NAM_TEST_MODEL="${CMAKE_SOURCE_DIR}/test/fixtures/wavenet.nam")
-target_compile_features(bass_nam_test PRIVATE cxx_std_17)
+target_compile_features(bass_nam_test PRIVATE cxx_std_20)
 add_test(NAME bass_nam COMMAND bass_nam_test)
 
 add_executable(bass_panel_test test/test_panel.cpp ${BASS_UI_SOURCES})
 target_include_directories(bass_panel_test PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(bass_panel_test PRIVATE PkgConfig::CAIRO PkgConfig::FREETYPE)
-target_compile_features(bass_panel_test PRIVATE cxx_std_17)
+target_compile_features(bass_panel_test PRIVATE cxx_std_20)
 add_test(NAME bass_panel COMMAND bass_panel_test)
 
 add_executable(bass_layout_test test/test_layout.cpp ${BASS_UI_SOURCES})
 target_include_directories(bass_layout_test PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(bass_layout_test PRIVATE PkgConfig::CAIRO PkgConfig::FREETYPE)
-target_compile_features(bass_layout_test PRIVATE cxx_std_17)
+target_compile_features(bass_layout_test PRIVATE cxx_std_20)
 add_test(NAME bass_layout COMMAND bass_layout_test)
 
 add_executable(bass_geometry_test test/test_geometry.cpp)
 target_include_directories(bass_geometry_test PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(bass_geometry_test PRIVATE PkgConfig::CAIRO)
-target_compile_features(bass_geometry_test PRIVATE cxx_std_17)
+target_compile_features(bass_geometry_test PRIVATE cxx_std_20)
 add_test(NAME bass_geometry COMMAND bass_geometry_test)
 
 add_executable(bass_ui_preview test/ui_preview.cpp ${BASS_UI_SOURCES})
 target_include_directories(bass_ui_preview PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(bass_ui_preview PRIVATE PkgConfig::CAIRO PkgConfig::FREETYPE)
-target_compile_features(bass_ui_preview PRIVATE cxx_std_17)
+target_compile_features(bass_ui_preview PRIVATE cxx_std_20)
 
 add_test(NAME bass_ttl
   COMMAND bass_ttl_gen --check --root "${CMAKE_SOURCE_DIR}")
@@ -220,7 +220,7 @@ if(LILV_FOUND)
   add_executable(bass_lv2_host_test test/lv2_host_test.cpp)
   target_include_directories(bass_lv2_host_test PRIVATE "${CMAKE_SOURCE_DIR}/src")
   target_link_libraries(bass_lv2_host_test PRIVATE PkgConfig::LILV PkgConfig::LV2)
-  target_compile_features(bass_lv2_host_test PRIVATE cxx_std_17)
+  target_compile_features(bass_lv2_host_test PRIVATE cxx_std_20)
   add_dependencies(bass_lv2_host_test bass_lv2_bundle)
   add_test(NAME bass_lv2_host
     COMMAND bass_lv2_host_test "${CMAKE_BINARY_DIR}/lv2/bass-suite.lv2")
@@ -231,7 +231,7 @@ target_include_directories(bass_clap_host_test PRIVATE
   "${CMAKE_SOURCE_DIR}/src"
   "${CMAKE_SOURCE_DIR}/third_party/clap/include")
 target_link_libraries(bass_clap_host_test PRIVATE ${CMAKE_DL_LIBS})
-target_compile_features(bass_clap_host_test PRIVATE cxx_std_17)
+target_compile_features(bass_clap_host_test PRIVATE cxx_std_20)
 add_dependencies(bass_clap_host_test bass_suite_bundle)
 add_test(NAME bass_clap_host
   COMMAND bass_clap_host_test "${CMAKE_BINARY_DIR}/clap/BassSuite.clap")
@@ -241,7 +241,7 @@ target_include_directories(bass_clap_user_ir_test PRIVATE
   "${CMAKE_SOURCE_DIR}/src"
   "${CMAKE_SOURCE_DIR}/third_party/clap/include")
 target_link_libraries(bass_clap_user_ir_test PRIVATE ${CMAKE_DL_LIBS})
-target_compile_features(bass_clap_user_ir_test PRIVATE cxx_std_17)
+target_compile_features(bass_clap_user_ir_test PRIVATE cxx_std_20)
 add_test(NAME bass_clap_user_ir
   COMMAND bass_clap_user_ir_test "$<TARGET_FILE:bass_suite>")
 
@@ -252,18 +252,18 @@ target_include_directories(bass_clap_nam_test PRIVATE
 target_link_libraries(bass_clap_nam_test PRIVATE ${CMAKE_DL_LIBS})
 target_compile_definitions(bass_clap_nam_test PRIVATE
   NAM_TEST_MODEL="${CMAKE_SOURCE_DIR}/test/fixtures/wavenet.nam")
-target_compile_features(bass_clap_nam_test PRIVATE cxx_std_17)
+target_compile_features(bass_clap_nam_test PRIVATE cxx_std_20)
 add_test(NAME bass_clap_nam
   COMMAND bass_clap_nam_test "$<TARGET_FILE:bass_suite>")
 
 add_executable(bass_tone_probe tools/bass_tone_probe.cpp)
 target_include_directories(bass_tone_probe PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(bass_tone_probe PRIVATE PkgConfig::SAMPLERATE nam_core Threads::Threads)
-target_compile_features(bass_tone_probe PRIVATE cxx_std_17)
+target_compile_features(bass_tone_probe PRIVATE cxx_std_20)
 
 add_executable(bass_probe tools/bass_probe.cpp ${BASS_DSP_SOURCES})
 target_include_directories(bass_probe PRIVATE
   "${CMAKE_SOURCE_DIR}/src"
   ${BASS_GUITARIX_INCLUDES})
 target_link_libraries(bass_probe PRIVATE PkgConfig::SAMPLERATE nam_core Threads::Threads)
-target_compile_features(bass_probe PRIVATE cxx_std_17)
+target_compile_features(bass_probe PRIVATE cxx_std_20)

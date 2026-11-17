@@ -60,7 +60,7 @@ int main() {
     return 1;
   }
 
-  for (int page = 0; page <= 3; ++page) {
+  for (int page = 0; page <= 4; ++page) {
     state.page = page;
     panel.draw(cr, shared, state);
     const auto rects = panel.widgetRects();
@@ -91,7 +91,7 @@ int main() {
     return 1;
   }
   if (!hasParam(rects, bass::P_GAIN) || !hasParam(rects, bass::P_BASS) ||
-      !hasParam(rects, bass::P_MASTER) || !hasParam(rects, bass::P_OUTPUT)) {
+      !hasParam(rects, bass::P_MASTER)) {
     std::fprintf(stderr, "amp page is missing core knobs\n");
     return 1;
   }
@@ -121,6 +121,19 @@ int main() {
   rects = panel.widgetRects();
   if (!hasParam(rects, bass::P_NAM_ON) || !hasParam(rects, bass::P_NAM_LEVEL)) {
     std::fprintf(stderr, "NAM page is missing controls\n");
+    return 1;
+  }
+
+  state.page = 4;
+  panel.draw(cr, shared, state);
+  rects = panel.widgetRects();
+  if (!hasParam(rects, bass::P_OUT_EQ_LOW) ||
+      !hasParam(rects, bass::P_OUT_EQ_HIGH) ||
+      !hasParam(rects, bass::P_OUT_HPF) ||
+      !hasParam(rects, bass::P_OUT_LPF) ||
+      !hasParam(rects, bass::P_OUTPUT) ||
+      !hasParam(rects, bass::P_LIMITER_THRESH)) {
+    std::fprintf(stderr, "OUT page is missing controls\n");
     return 1;
   }
 

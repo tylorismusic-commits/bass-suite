@@ -47,7 +47,7 @@ public:
     if (thread_.joinable()) {
       thread_.join();
     }
-    std::atomic_store(&model_, std::shared_ptr<NamDSP>());
+    model_.store(std::shared_ptr<NamDSP>());
   }
 
   void setSelected(int index) {
@@ -63,7 +63,7 @@ public:
   }
 
   std::shared_ptr<NamDSP> model() const {
-    return std::atomic_load(&model_);
+    return model_.load();
   }
 
   std::string loadedName() const {
@@ -108,7 +108,7 @@ private:
         loadedIndex_ = 0;
         loadedPath_.clear();
         fail_.store(false, std::memory_order_relaxed);
-        std::atomic_store(&model_, std::shared_ptr<NamDSP>());
+        model_.store(std::shared_ptr<NamDSP>());
       }
       return;
     }
@@ -118,15 +118,15 @@ private:
     const bool force = reload_.exchange(false, std::memory_order_relaxed);
     if (!force && index == loadedIndex_ && path == loadedPath_ &&
         std::fabs(rate - loadedRate_) < 0.5 && block == loadedBlock_ &&
-        std::atomic_load(&model_)) {
+        model_.load()) {
       return;
     }
     auto next = std::make_shared<NamDSP>();
     if (next->load(path, rate, block)) {
-      std::atomic_store(&model_, std::shared_ptr<NamDSP>(next));
+      model_.store(std::shared_ptr<NamDSP>(next));
       fail_.store(false, std::memory_order_relaxed);
     } else {
-      std::atomic_store(&model_, std::shared_ptr<NamDSP>());
+      model_.store(std::shared_ptr<NamDSP>());
       fail_.store(true, std::memory_order_relaxed);
     }
     loadedIndex_ = index;
@@ -144,7 +144,7 @@ private:
   std::atomic<bool> reload_{false};
   std::atomic<bool> fail_{false};
   std::thread thread_;
-  std::shared_ptr<NamDSP> model_;
+  std::atomic<std::shared_ptr<NamDSP>> model_;
   int loadedIndex_ = -1;
   std::string loadedPath_;
   double loadedRate_ = 0.0;

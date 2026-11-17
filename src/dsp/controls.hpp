@@ -37,17 +37,6 @@ struct Controls {
   float gateThreshold = 0.55f;  // mapped -80..-20 dBFS
   float gateDecay = 0.4f;       // mapped 20..1000 ms
 
-  // Model-specific switches, in fixed slots.
-  bool bright = false;      // unused on bass
-  bool chorusOn = false;    // unused on bass
-  float chorusRate = 0.35f;
-  float chorusDepth = 0.5f;
-  float cut = 0.5f;         // Chime
-  int voice = 0;            // channel / voicing where a model has one
-  int rectifier = 0;        // Recto: 0 silicon, 1 tube
-  bool crunch = false;      // unused on bass
-  int powerScale = 0;       // Crunch: 0 = 50, 1 = 100
-
   // Cab.
   int cab = 0;              // 0 factory, 1 user IR
   int cabSet = 3;           // 0 1x15, 1 4x10, 2 2x12, 3 8x10
@@ -64,6 +53,14 @@ struct Controls {
   float octDry = 1.0f;
   float octTone = 0.5f;
 
+  // Output EQ / filters.
+  float outEqLow = 0.5f;
+  float outEqLowMid = 0.5f;
+  float outEqHighMid = 0.5f;
+  float outEqHigh = 0.5f;
+  float outHpf = 0.0f;
+  float outLpf = 1.0f;
+
   // Comp pedal.
   bool compOn = true;
   float compAmount = 0.35f;
@@ -78,29 +75,7 @@ struct Controls {
   float odLevel = 0.55f;
   float odMix = 0.6f;
 
-  // Delay.
-  bool delayOn = false;
-  bool delaySync = true;
-  int delayDiv = 8;         // index into the division table
-  float delayTime = 0.18f;  // free mode, mapped to 20..2000 ms
-  float delayFeedback = 0.3f;
-  float delayMix = 0.25f;
-  float delayTone = 0.5f;
-  float delayMod = 0.2f;
-  bool delayPingPong = false;
-  float bpm = 120.0f;       // manual tempo when the host has no transport
-
-  // Reverb.
-  bool reverbOn = false;
-  int reverbMode = 0;       // 0 plate, 1 spring
-  float reverbMix = 0.2f;
-  float reverbDecay = 0.4f;
-  float reverbTone = 0.5f;
-  float reverbPreDelay = 0.1f;
-
   // Global.
-  bool hq = true;
-  int loopPos = 0;          // 0 pre-power, 1 post-cab
   bool limiterOn = false;
   float limiterThreshold = 1.0f;  // 1.0 = 0 dB
 };
@@ -114,8 +89,6 @@ struct Meters {
   float outPeakLDb = -120.0f;
   float outPeakRDb = -120.0f;
   float outVuDb = -120.0f;
-  float bpm = 120.0f;
-  bool hostTempo = false;
 };
 
 } // namespace bass
