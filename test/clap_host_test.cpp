@@ -31,6 +31,20 @@ bool outPush(const clap_output_events_t*, const clap_event_header_t*) {
   return true;
 }
 
+using EventList = std::vector<clap_event_param_value_t>;
+uint32_t evSize(const clap_input_events_t* ev) {
+  const auto* list = static_cast<const EventList*>(ev->ctx);
+  return list ? static_cast<uint32_t>(list->size()) : 0u;
+}
+const clap_event_header_t* evGet(const clap_input_events_t* ev,
+                                 uint32_t index) {
+  const auto* list = static_cast<const EventList*>(ev->ctx);
+  if (!list || index >= list->size()) {
+    return nullptr;
+  }
+  return &(*list)[index].header;
+}
+
 int64_t streamWrite(const clap_ostream_t* stream, const void* buffer,
                     uint64_t size) {
   auto* out = static_cast<std::vector<unsigned char>*>(stream->ctx);
@@ -206,6 +220,81 @@ int main(int argc, char** argv) {
       std::fprintf(stderr, "non-finite output\n");
       return 1;
     }
+  }
+
+  // End-to-end amp switch through the real CLAP parameter-event path.  The
+  // output must not step even though the model changes mid-note.
+  {
+    EventList events;
+    inEvents.ctx = &events;
+    inEvents.size = evSize;
+    inEvents.get = evGet;
+    double phase = 0.0;
+    double steadyBefore = 0.0;
+    double steadyAfter = 0.0;
+    double maxDelta = 0.0;
+    double quietest = 1.0;
+    bool audibleAfter = false;
+    float previous = 0.0f;
+    for (int block = 0; block < 320; ++block) {
+      for (int i = 0; i < 256; ++i) {
+        const float s = 0.12f * std::sin(phase);
+        phase += 2.0 * 3.14159265358979 * 220.0 / 48000.0;
+        l[i] = r[i] = s;
+      }
+      events.clear();
+      if (block == 120) {
+        clap_event_param_value_t ev{};
+        ev.header.size = sizeof(ev);
+        ev.header.time = 0;
+        ev.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
+        ev.header.type = CLAP_EVENT_PARAM_VALUE;
+        ev.param_id = bass::P_MODEL;
+        ev.note_id = -1;
+        ev.port_index = -1;
+        ev.channel = -1;
+        ev.key = -1;
+        ev.value = 0.0;
+        events.push_back(ev);
+      }
+      if (plugin->process(plugin, &proc) == CLAP_PROCESS_ERROR) {
+        std::fprintf(stderr, "process failed during switch\n");
+        return 1;
+      }
+      double energy = 0.0;
+      for (int i = 0; i < 256; ++i) {
+        if (!std::isfinite(l[i]) || !std::isfinite(r[i])) {
+          std::fprintf(stderr, "non-finite output during switch\n");
+          return 1;
+        }
+        const double d = std::fabs(double(l[i]) - double(previous));
+        previous = l[i];
+        energy += static_cast<double>(l[i]) * l[i];
+        if (block >= 121 && block <= 150) {
+          maxDelta = std::max(maxDelta, d);
+          quietest = std::min(quietest, std::sqrt(energy / 256.0));
+        } else if (block >= 112 && block < 120) {
+          steadyBefore = std::max(steadyBefore, d);
+        } else if (block >= 200) {
+          steadyAfter = std::max(steadyAfter, d);
+        }
+      }
+      if (block >= 200 && std::sqrt(energy / 256.0) > 1.0e-4) {
+        audibleAfter = true;
+      }
+    }
+    const double allowed =
+        std::max(steadyBefore, steadyAfter) * 1.5 + 0.005;
+    if (!audibleAfter || quietest > 1.0e-3 || maxDelta > allowed) {
+      std::fprintf(stderr,
+                   "CLAP amp switch was not clean: audible %d quietest "
+                   "%.6f maxDelta %.6f allowed %.6f\n",
+                   audibleAfter ? 1 : 0, quietest, maxDelta, allowed);
+      return 1;
+    }
+    inEvents.ctx = nullptr;
+    inEvents.size = inSize;
+    inEvents.get = inGet;
   }
 
   plugin->stop_processing(plugin);

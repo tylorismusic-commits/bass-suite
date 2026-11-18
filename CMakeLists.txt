@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(bass_suite VERSION 0.1.0 LANGUAGES CXX)
+project(bass_suite VERSION 0.1.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -188,8 +188,10 @@ target_link_libraries(bass_user_ir_test PRIVATE PkgConfig::SAMPLERATE nam_core T
 target_compile_features(bass_user_ir_test PRIVATE cxx_std_20)
 add_test(NAME bass_user_ir COMMAND bass_user_ir_test)
 
-add_executable(bass_nam_test test/test_nam.cpp)
-target_include_directories(bass_nam_test PRIVATE "${CMAKE_SOURCE_DIR}/src")
+add_executable(bass_nam_test test/test_nam.cpp ${BASS_DSP_SOURCES})
+target_include_directories(bass_nam_test PRIVATE
+  "${CMAKE_SOURCE_DIR}/src"
+  ${BASS_GUITARIX_INCLUDES})
 target_link_libraries(bass_nam_test PRIVATE PkgConfig::SAMPLERATE nam_core Threads::Threads)
 target_compile_definitions(bass_nam_test PRIVATE
   NAM_TEST_MODEL="${CMAKE_SOURCE_DIR}/test/fixtures/wavenet.nam")

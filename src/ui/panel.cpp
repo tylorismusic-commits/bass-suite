@@ -1072,6 +1072,7 @@ void Panel::applyPreset(Shared& shared, PanelState& state, int index) const {
       shared.set(static_cast<uint32_t>(v.param), v.value);
     }
   }
+  shared.requestReload();
   state.presetIndex = index;
   state.presetDirty = false;
 }

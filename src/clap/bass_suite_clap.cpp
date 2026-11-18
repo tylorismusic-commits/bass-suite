@@ -830,6 +830,7 @@ bool stateLoad(const clap_plugin_t* p, const clap_istream_t* stream) {
                             static_cast<double>(index));
     }
   }
+  s->shared.requestReload();
   return true;
 }
 
@@ -1000,6 +1001,9 @@ clap_process_status pluginProcess(const clap_plugin_t* p,
     std::memcpy(right, inR, frames * sizeof(float));
   }
 
+  if (s->shared.takeReload()) {
+    s->engine.requestReload();
+  }
   s->nam.setSelected(static_cast<int>(s->shared.get(P_NAM_MODEL) + 0.5));
   s->engine.setUserIrBank(s->userIr.bank());
   s->engine.setNamModel(s->nam.model());

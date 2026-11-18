@@ -1,8 +1,8 @@
 # Maintainer: tylor <tylorismusic@users.noreply.github.com>
 pkgname=bass-suite
-pkgver=0.1.0
+pkgver=0.1.1
 pkgrel=1
-_tag=0.1.0
+_tag=0.1.1
 pkgdesc="Four-amp bass suite with cabs, compression, drive and NAM (CLAP + LV2)"
 arch=('x86_64')
 url="https://github.com/tylorismusic-commits/bass-suite"

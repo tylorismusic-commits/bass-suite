@@ -254,6 +254,16 @@ public:
     return dirty_[p].exchange(false, std::memory_order_acquire);
   }
 
+  // A preset or host-state load replaces many controls at once.  The audio
+  // thread turns this into a full engine switch so the running amp never
+  // steps its gain/tone coefficients in place.
+  void requestReload() noexcept {
+    reload_.store(true, std::memory_order_release);
+  }
+  bool takeReload() noexcept {
+    return reload_.exchange(false, std::memory_order_acquire);
+  }
+
   bool isDirty(uint32_t p) const noexcept {
     return dirty_[p].load(std::memory_order_acquire);
   }
@@ -284,6 +294,7 @@ public:
 private:
   std::atomic<double> values_[P_COUNT];
   std::atomic<bool> dirty_[P_COUNT];
+  std::atomic<bool> reload_{false};
 };
 
 // Maps the host-facing parameter values to the DSP controls.

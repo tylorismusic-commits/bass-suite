@@ -1,6 +1,6 @@
 # Bass Suite
 
-**Version 0.1.0 — Linux x86_64** · GPL-3.0-or-later
+**Version 0.1.1 — Linux x86_64** · GPL-3.0-or-later
 
 A bass tracking plugin in the Suite visual language: four bass amps, six
 generated CC0 cabinets, a compressor, octave and bass-safe drive, user IRs and

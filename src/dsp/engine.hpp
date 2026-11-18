@@ -794,7 +794,10 @@ public:
     oct_.reset();
     tuner_.reset();
     cabConvolver_.reset();
-    if (activeNam_) {
+    // Only reset the NAM model when this engine is actually using it.  Both
+    // crossfade engines can hold the same shared NamDSP; resetting the idle
+    // one would wipe the active engine's NAM state.
+    if (controls_.namOn && activeNam_) {
       activeNam_->reset();
     }
     dcPreL_.reset();

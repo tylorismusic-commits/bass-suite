@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.1 — 2026-11-18
+
+- Amp switching no longer pops. The two engines were summed with an
+  equal-gain crossfade, so two differently-phased amps partly cancelled and
+  the level collapsed by up to 34 dB during a switch. The standby engine is
+  now warmed with the live input, the old amp fades out in 5 ms, the engines
+  swap at silence, and the new amp fades in over 8 ms.
+- Preset and host-state loads that keep the same amp use the same clean
+  switch instead of stepping the running amp's gain and tone coefficients.
+- Cab/IR changes while NAM is on now mute and fade, and resetting the idle
+  crossfade engine no longer wipes the active engine's NAM state.
+- Added mid-note CLAP model-switch, same-amp preset-reload and NAM-switch
+  continuity tests.
+
 ## Unreleased
 
 - Added a chromatic input tuner page (TUNE pill) with note, octave, cents and

@@ -1,10 +1,12 @@
 // Bass Suite — NAM loader smoke test
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "dsp/crossfade_engine.hpp"
 #include "dsp/nam_model.hpp"
 
 #include <cmath>
 #include <cstdio>
+#include <memory>
 #include <vector>
 
 #ifndef NAM_TEST_MODEL
@@ -44,6 +46,6 @@ int main() {
       return 1;
     }
   }
-  std::printf("amp_nam: ok\n");
+  std::printf("bass_nam: ok\n");
   return 0;
 }

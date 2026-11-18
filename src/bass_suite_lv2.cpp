@@ -173,6 +173,9 @@ void run(LV2_Handle handle, uint32_t frames) {
     }
     p->portsSeen = true;
   }
+  if (p->shared.takeReload()) {
+    p->engine.requestReload();
+  }
   p->nam.setSelected(static_cast<int>(p->shared.get(bass::P_NAM_MODEL) + 0.5));
   p->engine.setUserIrBank(p->userIr.bank());
   p->engine.setNamModel(p->nam.model());
@@ -366,6 +369,8 @@ LV2_State_Status stateRestore(LV2_Handle handle,
     }
   }
   p->engine.setUserIrBank(p->userIr.bank());
+  p->shared.requestReload();
+  p->engine.requestReload();
   p->engine.setControls(bass::controlsFrom(p->shared));
   return LV2_STATE_SUCCESS;
 }
