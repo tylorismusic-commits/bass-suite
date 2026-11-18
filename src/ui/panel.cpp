@@ -1531,8 +1531,6 @@ void Panel::drawOutPage(cairo_t* cr, const Shared& shared,
 
   text(cr, "LIMITER", 160, 515, 9.5, 0, skin.legendDim.r, skin.legendDim.g,
        skin.legendDim.b);
-  text(cr, "OUTPUT", 920, 500, 9.5, 1, skin.legendDim.r, skin.legendDim.g,
-       skin.legendDim.b);
 
   drawLevelMeter(cr, 20, 150, 16, 352, state.inLevelL, state.inLevelR, model,
                  true, -60.0, 0.0);

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Hide NAM's internal symbols so Bass Suite can load after Amp Suite in the
+  same host process without aborting on duplicate NAM registration.
+- Make the octave wet level follow the input envelope and round the square
+  with a 12 dB/oct tone filter; raise the default octave setting.
+- Remove the duplicate OUTPUT caption on the OUT page.
+
 ## 0.1.0 — 2026-11-17
 
 - First working Bass Suite vertical slice: CLAP + LV2, 1040×640 panel.
