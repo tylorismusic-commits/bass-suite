@@ -60,7 +60,7 @@ int main() {
     return 1;
   }
 
-  for (int page = 0; page <= 4; ++page) {
+  for (int page = 0; page <= 5; ++page) {
     state.page = page;
     panel.draw(cr, shared, state);
     const auto rects = panel.widgetRects();
@@ -134,6 +134,22 @@ int main() {
       !hasParam(rects, bass::P_OUTPUT) ||
       !hasParam(rects, bass::P_LIMITER_THRESH)) {
     std::fprintf(stderr, "OUT page is missing controls\n");
+    return 1;
+  }
+
+  // TUNE opens the tuner page and enables pitch analysis.
+  panel.pointerDown(shared, state, 608.0, 32.0, false);
+  panel.pointerUp();
+  panel.draw(cr, shared, state);
+  if (state.page != 5 || !shared.tunerOn.load()) {
+    std::fprintf(stderr, "TUNE pill did not open the tuner\n");
+    return 1;
+  }
+  panel.pointerDown(shared, state, 608.0, 32.0, false);
+  panel.pointerUp();
+  panel.draw(cr, shared, state);
+  if (state.page != 0 || shared.tunerOn.load()) {
+    std::fprintf(stderr, "TUNE pill did not close the tuner\n");
     return 1;
   }
 

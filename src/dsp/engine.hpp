@@ -22,6 +22,7 @@
 #include "params.hpp"
 #include "oversample.hpp"
 #include "power_amp.hpp"
+#include "tuner.hpp"
 #include "ts9.hpp"
 #include "recipe.hpp"
 #include "user_ir.hpp"
@@ -41,6 +42,7 @@ public:
     odR_.prepare(sr_);
     comp_.prepare(sr_);
     oct_.prepare(sr_);
+    tuner_.prepare(sr_);
     cabConvolver_.prepare(4096);
     dcPreL_.set(20.0f, sr_);
     dcPreR_.set(20.0f, sr_);
@@ -498,12 +500,15 @@ public:
 
   void process(float* left, float* right, int frames, Meters& meters) noexcept {
     const Controls c = controls_;
+    tuner_.process(left, right, frames, c.tunerOn);
     if (!c.enabled) {
       bypass(left, right, frames, meters);
+      publishTuner(meters);
       return;
     }
     if (c.namOn && activeNam_) {
       processNam(left, right, frames, meters);
+      publishTuner(meters);
       return;
     }
     const int procModel =
@@ -767,6 +772,14 @@ public:
     meters.outPeakRDb = gainToDb(outPeakR);
     meters.outPeakDb = std::max(meters.outPeakLDb, meters.outPeakRDb);
     meters.outVuDb = gainToDb(std::sqrt(vuPower_)) + 18.0f;
+    publishTuner(meters);
+  }
+
+  void publishTuner(Meters& meters) const noexcept {
+    meters.tunerHz = tuner_.hz();
+    meters.tunerCents = tuner_.cents();
+    meters.tunerConfidence = tuner_.confidence();
+    meters.tunerNote = tuner_.note();
   }
 
   void reset() noexcept {
@@ -779,6 +792,7 @@ public:
     odR_.reset();
     comp_.reset();
     oct_.reset();
+    tuner_.reset();
     cabConvolver_.reset();
     if (activeNam_) {
       activeNam_->reset();
@@ -960,6 +974,7 @@ private:
   Ts9 odR_;
   CompPedal comp_;
   OctavePedal oct_;
+  Tuner tuner_;
   CabBank cabBank_;
   CabConvolver cabConvolver_;
   Biquad outLowL_, outLowR_, outLowMidL_, outLowMidR_;

@@ -530,6 +530,31 @@ int main() {
     }
   }
 
+
+  // Tuner: a 55 Hz input reads as A1, and silence produces no note.
+  {
+    bass::Tuner tuner;
+    tuner.prepare(48000.0f);
+    std::vector<float> l(48000), r(48000);
+    for (int i = 0; i < 48000; ++i) {
+      l[i] = r[i] = 0.2f * std::sin(2.0 * 3.14159265 * 55.0 * i / 48000.0);
+    }
+    tuner.process(l.data(), r.data(), 48000, true);
+    if (!tuner.hasPitch() || std::fabs(tuner.hz() - 55.0f) > 1.5f ||
+        tuner.note() != 33) {
+      std::fprintf(stderr, "tuner failed on 55 Hz: %.2f Hz note %d\n",
+                   tuner.hz(), tuner.note());
+      return 1;
+    }
+    std::fill(l.begin(), l.end(), 0.0f);
+    std::fill(r.begin(), r.end(), 0.0f);
+    tuner.process(l.data(), r.data(), 48000, true);
+    if (tuner.hasPitch()) {
+      std::fprintf(stderr, "tuner latched onto silence\n");
+      return 1;
+    }
+  }
+
   std::printf("bass_dsp: ok\n");
   return 0;
 }

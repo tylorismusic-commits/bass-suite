@@ -127,6 +127,7 @@ Skin skinFor(int model) {
 
 constexpr double kPi = 3.14159265358979323846;
 
+constexpr int kTunerPage = 5;
 constexpr double kPresetX = 72.0;
 constexpr double kPresetY = 14.0;
 constexpr double kPresetW = 330.0;
@@ -471,6 +472,7 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   pagePill(2, 722, 20, 58, 24, "CAB");
   pagePill(3, 788, 20, 58, 24, "NAM");
   pagePill(4, 854, 20, 58, 24, "OUT");
+  pagePill(kTunerPage, 584, 20, 48, 24, "TUNE");
 
   // Model tabs.
   const int tabCount = static_cast<int>(Model::Count);
@@ -538,6 +540,8 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     // NAM page.
     pill(P_NAM_ON, 852, 300, 96, 24, "NAM");
     knob(P_NAM_LEVEL, 900, 380, 26, "LEVEL", {}, true);
+  } else if (state.page == kTunerPage) {
+    // Tuner has no widgets; the display is drawn as a page.
   } else if (state.page == 4) {
     // Output page: 4-band EQ, HPF/LPF, limiter, output.
     static const std::vector<const char*> kTrimScale = {"-12", "0", "+12"};
@@ -1076,7 +1080,8 @@ void Panel::applyPreset(Shared& shared, PanelState& state, int index) const {
 // Drawing
 // ---------------------------------------------------------------------------
 
-void Panel::draw(cairo_t* cr, const Shared& shared, const PanelState& state) {
+void Panel::draw(cairo_t* cr, Shared& shared, const PanelState& state) {
+  shared.tunerOn.store(state.page == kTunerPage, std::memory_order_relaxed);
   layout(shared, state);
   const int model = static_cast<int>(shared.get(P_MODEL) + 0.5);
   const Skin skin = skinFor(model);
@@ -1128,6 +1133,8 @@ void Panel::draw(cairo_t* cr, const Shared& shared, const PanelState& state) {
     drawNamPage(cr, shared, state);
   } else if (state.page == 4) {
     drawOutPage(cr, shared, state);
+  } else if (state.page == kTunerPage) {
+    drawTunerPage(cr, shared, state);
   } else {
     drawCabPage(cr, shared, state);
   }
@@ -1544,6 +1551,91 @@ void Panel::drawOutPage(cairo_t* cr, const Shared& shared,
                  model, false, -60.0, 3.0);
 }
 
+void Panel::drawTunerPage(cairo_t* cr, const Shared& shared,
+                          const PanelState& state) const {
+  (void)state;
+  const int model = static_cast<int>(shared.get(P_MODEL) + 0.5);
+  const Skin skin = skinFor(model);
+  text(cr, "CHROMATIC TUNER", kPanelWidth * 0.5, 158, 18, 1, skin.legend.r,
+       skin.legend.g, skin.legend.b);
+  text(cr, "INPUT PITCH — NO COMP / OCTAVE / DRIVE", kPanelWidth * 0.5, 177,
+       9.5, 1, skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
+
+  roundRect(cr, 160, 195, 720, 360, 6);
+  cairo_set_source_rgba(cr, 0.02, 0.024, 0.028, 0.96);
+  cairo_fill(cr);
+  setRgb(cr, skin.tabOn, 0.55);
+  cairo_set_line_width(cr, 1.0);
+  roundRect(cr, 160.5, 195.5, 719, 359, 6);
+  cairo_stroke(cr);
+
+  const int note = shared.tunerNote.load(std::memory_order_relaxed);
+  const float hz = shared.tunerHz.load(std::memory_order_relaxed);
+  const float cents = shared.tunerCents.load(std::memory_order_relaxed);
+  const float confidence =
+      shared.tunerConfidence.load(std::memory_order_relaxed);
+  const bool has = note >= 0 && confidence > 0.55f;
+  static const char* kNames[12] = {"C",  "C#", "D",  "D#", "E",  "F",
+                                   "F#", "G",  "G#", "A",  "A#", "B"};
+  char noteText[24] = "—";
+  if (has) {
+    const int pc = note % 12;
+    const int octave = note / 12 - 1;
+    std::snprintf(noteText, sizeof(noteText), "%s%d", kNames[pc], octave);
+  }
+  const bool inTune = has && std::fabs(cents) < 5.0f;
+  const Rgb noteColor = !has ? skin.legendDim
+                             : (inTune ? Rgb{0.30, 0.86, 0.48} : skin.tabOn);
+  text(cr, noteText, kPanelWidth * 0.5, 360, 96, 1, noteColor.r, noteColor.g,
+       noteColor.b);
+  char line[80];
+  if (has) {
+    std::snprintf(line, sizeof(line), "%+.1f cents   ·   %.1f Hz", cents, hz);
+  } else {
+    std::snprintf(line, sizeof(line), "Play a note");
+  }
+  text(cr, line, kPanelWidth * 0.5, 400, 12, 1,
+       has ? skin.legend.r : skin.legendDim.r,
+       has ? skin.legend.g : skin.legendDim.g,
+       has ? skin.legend.b : skin.legendDim.b);
+
+  const double cx = kPanelWidth * 0.5;
+  const double rx = 250.0;
+  const double ry = 460.0;
+  setRgb(cr, skin.legendDim, 0.25);
+  cairo_set_line_width(cr, 1.0);
+  cairo_move_to(cr, cx - rx, ry);
+  cairo_line_to(cr, cx + rx, ry);
+  cairo_stroke(cr);
+  for (int c = -50; c <= 50; c += 10) {
+    const double x = cx + rx * c / 50.0;
+    const bool major = c == 0;
+    setRgb(cr, major ? skin.tabOn : skin.legendDim, major ? 0.9 : 0.45);
+    cairo_set_line_width(cr, major ? 2.0 : 1.0);
+    cairo_move_to(cr, x, ry - (major ? 14.0 : 8.0));
+    cairo_line_to(cr, x, ry + (major ? 14.0 : 8.0));
+    cairo_stroke(cr);
+    char tick[8];
+    std::snprintf(tick, sizeof(tick), "%+d", c);
+    text(cr, tick, x, ry + 30, 8.5, 1, skin.legendDim.r, skin.legendDim.g,
+         skin.legendDim.b);
+  }
+  if (has) {
+    const double x =
+        cx + rx * std::clamp(static_cast<double>(cents), -50.0, 50.0) / 50.0;
+    setRgb(cr, noteColor);
+    cairo_rectangle(cr, x - 5, ry - 20, 10, 40);
+    cairo_fill(cr);
+  }
+  const char* status = !has ? "WAITING FOR SIGNAL"
+                            : (inTune ? "IN TUNE" : (cents < 0 ? "TUNE UP" : "TUNE DOWN"));
+  text(cr, status, kPanelWidth * 0.5, 510, 13, 1, noteColor.r, noteColor.g,
+       noteColor.b);
+  text(cr, "Chromatic  ·  ±50 cents  ·  input before comp / octave / drive",
+       kPanelWidth * 0.5, 535, 8.5, 1, skin.legendDim.r, skin.legendDim.g,
+       skin.legendDim.b);
+}
+
 void Panel::drawFooter(cairo_t* cr, const Shared& shared,
                        const PanelState& state) const {
   const int model = static_cast<int>(shared.get(P_MODEL) + 0.5);
@@ -1574,6 +1666,8 @@ void Panel::drawFooter(cairo_t* cr, const Shared& shared,
     std::snprintf(buf, sizeof(buf), "NAM MODEL  ·  %s", name.c_str());
   } else if (state.page == 4) {
     std::snprintf(buf, sizeof(buf), "OUTPUT  ·  EQ / HPF / LPF / LIMITER");
+  } else if (state.page == kTunerPage) {
+    std::snprintf(buf, sizeof(buf), "TUNER  ·  CHROMATIC INPUT");
   } else {
     std::snprintf(buf, sizeof(buf), "%s  ·  %s", skin.caption,
                   cabName(model, cab, cabSet));

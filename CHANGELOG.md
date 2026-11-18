@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added a chromatic input tuner page (TUNE pill) with note, octave, cents and
+  frequency display.
+
+## Unreleased
+
 - Hide NAM's internal symbols so Bass Suite can load after Amp Suite in the
   same host process without aborting on duplicate NAM registration.
 - Make the octave wet level follow the input envelope and round the square

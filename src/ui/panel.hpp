@@ -61,7 +61,7 @@ public:
 
   void loadFont(const std::string& dir);
   void tick(const Shared& shared, PanelState& state) const;
-  void draw(cairo_t* cr, const Shared& shared, const PanelState& state);
+  void draw(cairo_t* cr, Shared& shared, const PanelState& state);
 
   bool pointerDown(Shared& shared, PanelState& state, double x, double y,
                    bool fine);
@@ -174,6 +174,8 @@ private:
                        const PanelState& state) const;
   void drawNamPage(cairo_t* cr, const Shared& shared,
                    const PanelState& state) const;
+  void drawTunerPage(cairo_t* cr, const Shared& shared,
+                     const PanelState& state) const;
   bool handleFileBrowserClick(Shared& shared, PanelState& state, double x,
                               double y);
   void text(cairo_t* cr, const char* s, double x, double y, double size,

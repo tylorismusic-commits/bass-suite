@@ -215,6 +215,11 @@ public:
     outPeakRDb.store(-120.0f, std::memory_order_relaxed);
     outVuDb.store(-120.0f, std::memory_order_relaxed);
     meterSerial.store(0, std::memory_order_relaxed);
+    tunerOn.store(false, std::memory_order_relaxed);
+    tunerHz.store(0.0f, std::memory_order_relaxed);
+    tunerCents.store(0.0f, std::memory_order_relaxed);
+    tunerConfidence.store(0.0f, std::memory_order_relaxed);
+    tunerNote.store(-1, std::memory_order_relaxed);
   }
 
   double get(uint32_t p) const noexcept {
@@ -270,6 +275,11 @@ public:
   std::atomic<float> outPeakRDb;
   std::atomic<float> outVuDb;
   std::atomic<uint32_t> meterSerial;
+  std::atomic<bool> tunerOn;
+  std::atomic<float> tunerHz;
+  std::atomic<float> tunerCents;
+  std::atomic<float> tunerConfidence;
+  std::atomic<int> tunerNote;
 
 private:
   std::atomic<double> values_[P_COUNT];
@@ -297,6 +307,7 @@ inline Controls controlsFrom(const Shared& s) {
   c.cabLowCut = static_cast<float>(s.get(P_CAB_LOWCUT));
   c.cabHighCut = static_cast<float>(s.get(P_CAB_HIGHCUT));
   c.cabBypass = s.get(P_CAB_BYPASS) > 0.5;
+  c.tunerOn = s.tunerOn.load(std::memory_order_relaxed);
   c.octOn = s.get(P_OCT_ON) > 0.5;
   c.octLevel = static_cast<float>(s.get(P_OCT_LEVEL));
   c.octDry = static_cast<float>(s.get(P_OCT_DRY));

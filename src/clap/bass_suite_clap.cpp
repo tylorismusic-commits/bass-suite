@@ -1013,6 +1013,10 @@ clap_process_status pluginProcess(const clap_plugin_t* p,
   s->shared.outPeakLDb.store(s->meters.outPeakLDb, std::memory_order_relaxed);
   s->shared.outPeakRDb.store(s->meters.outPeakRDb, std::memory_order_relaxed);
   s->shared.outVuDb.store(s->meters.outVuDb, std::memory_order_relaxed);
+  s->shared.tunerHz.store(s->meters.tunerHz, std::memory_order_relaxed);
+  s->shared.tunerCents.store(s->meters.tunerCents, std::memory_order_relaxed);
+  s->shared.tunerConfidence.store(s->meters.tunerConfidence, std::memory_order_relaxed);
+  s->shared.tunerNote.store(s->meters.tunerNote, std::memory_order_relaxed);
   s->shared.meterSerial.fetch_add(1, std::memory_order_relaxed);
   return CLAP_PROCESS_CONTINUE;
 }

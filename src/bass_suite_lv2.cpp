@@ -203,6 +203,10 @@ void run(LV2_Handle handle, uint32_t frames) {
   p->shared.outPeakLDb.store(p->meters.outPeakLDb, std::memory_order_relaxed);
   p->shared.outPeakRDb.store(p->meters.outPeakRDb, std::memory_order_relaxed);
   p->shared.outVuDb.store(p->meters.outVuDb, std::memory_order_relaxed);
+  p->shared.tunerHz.store(p->meters.tunerHz, std::memory_order_relaxed);
+  p->shared.tunerCents.store(p->meters.tunerCents, std::memory_order_relaxed);
+  p->shared.tunerConfidence.store(p->meters.tunerConfidence, std::memory_order_relaxed);
+  p->shared.tunerNote.store(p->meters.tunerNote, std::memory_order_relaxed);
   p->shared.meterSerial.fetch_add(1, std::memory_order_relaxed);
 }
 
