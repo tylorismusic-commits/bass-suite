@@ -704,6 +704,12 @@ bool Panel::pointerDown(Shared& shared, PanelState& state, double x, double y,
       }
       case Kind::ModelTab: {
         const int model = static_cast<int>(w.value);
+        if (static_cast<int>(shared.get(P_MODEL) + 0.5) == model) {
+          // Clicking the already-selected amp returns to the main amp page;
+          // an unselected amp changes model but leaves the open page alone.
+          state.page = 0;
+          return true;
+        }
         shared.set(P_MODEL, w.value);
         shared.set(P_NAM_ON, 0.0);
         // Sensible cab defaults when auditioning amps; the Cab page can

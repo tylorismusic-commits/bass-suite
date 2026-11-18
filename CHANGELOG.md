@@ -7,6 +7,8 @@
 - Make the octave wet level follow the input envelope and round the square
   with a 12 dB/oct tone filter; raise the default octave setting.
 - Remove the duplicate OUTPUT caption on the OUT page.
+- Clicking the already-selected amp while another page is open returns to the
+  amp page; clicking a different amp keeps the current page open.
 
 ## 0.1.0 — 2026-11-17
 

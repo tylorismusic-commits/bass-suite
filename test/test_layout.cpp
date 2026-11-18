@@ -137,6 +137,24 @@ int main() {
     return 1;
   }
 
+  // Selecting a different model keeps the open page; clicking the current
+  // model returns to the main amp page.
+  state.page = 2;
+  shared.set(bass::P_MODEL, 0.0);
+  panel.draw(cr, shared, state);
+  panel.pointerDown(shared, state, 396.0, 90.0, false);
+  panel.pointerUp();
+  if (std::fabs(shared.get(bass::P_MODEL) - 1.0) > 0.01 || state.page != 2) {
+    std::fprintf(stderr, "unselected model did not keep the cab page open\n");
+    return 1;
+  }
+  panel.pointerDown(shared, state, 396.0, 90.0, false);
+  panel.pointerUp();
+  if (state.page != 0 || std::fabs(shared.get(bass::P_MODEL) - 1.0) > 0.01) {
+    std::fprintf(stderr, "selected model did not return to the amp page\n");
+    return 1;
+  }
+
   // A factory-cab row selects that cab and forces the factory path.
   state.page = 2;
   shared.set(bass::P_CAB, 1.0);
