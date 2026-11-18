@@ -359,6 +359,48 @@ int main() {
     }
   }
 
+  // The octave wet level must follow the input, not run at a fixed loud
+  // square level.  Otherwise quiet notes explode through the amp and only a
+  // tiny Level setting is usable.
+  {
+    auto octaveRms = [](float amplitude) {
+      bass::Shared o;
+      o.set(bass::P_MODEL, 2.0);
+      o.set(bass::P_CAB_BYPASS, 1.0);
+      o.set(bass::P_COMP_ON, 0.0);
+      o.set(bass::P_OD_ON, 0.0);
+      o.set(bass::P_GATE_ON, 0.0);
+      o.set(bass::P_OCT_ON, 1.0);
+      o.set(bass::P_OCT_LEVEL, 1.0);
+      o.set(bass::P_OCT_DRY, 0.0);
+      o.set(bass::P_OCT_TONE, 0.5);
+      o.set(bass::P_GAIN, 0.5);
+      bass::Engine e;
+      e.prepare(48000.0f);
+      e.setControls(bass::controlsFrom(o));
+      const int n = 48000;
+      std::vector<float> l(n), r(n);
+      for (int i = 0; i < n; ++i) {
+        l[i] = r[i] =
+            amplitude * std::sin(2.0 * 3.14159265 * 110.0 * i / 48000.0);
+      }
+      bass::Meters m;
+      e.process(l.data(), r.data(), n, m);
+      double sum = 0.0;
+      for (int i = 12000; i < n; ++i) {
+        sum += static_cast<double>(l[i]) * l[i];
+      }
+      return std::sqrt(sum / (n - 12000));
+    };
+    const double quiet = octaveRms(0.05f);
+    const double loud = octaveRms(0.40f);
+    if (!(loud > quiet * 2.0)) {
+      std::fprintf(stderr, "octave does not track input level: quiet=%f loud=%f\n",
+                   quiet, loud);
+      return 1;
+    }
+  }
+
   // Output EQ and filters: a high HPF cuts the low end, a low LPF cuts the
   // top, and a low-shelf boost lifts 60 Hz.
   {
@@ -488,6 +530,6 @@ int main() {
     }
   }
 
-  std::printf("amp_dsp: ok\n");
+  std::printf("bass_dsp: ok\n");
   return 0;
 }

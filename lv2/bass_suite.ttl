@@ -469,7 +469,7 @@
         lv2:index 41 ;
         lv2:symbol "oct_level" ;
         lv2:name "Octave" ;
-        lv2:default 0.35 ;
+        lv2:default 0.28 ;
         lv2:minimum 0 ;
         lv2:maximum 1 ;
         pg:group <https://github.com/tylorismusic-commits/bass-suite#octave> ;

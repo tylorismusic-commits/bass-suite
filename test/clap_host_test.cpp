@@ -4,11 +4,13 @@
 #include <clap/clap.h>
 
 #include <dlfcn.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -56,6 +58,27 @@ int main(int argc, char** argv) {
   if (!lib) {
     std::fprintf(stderr, "dlopen failed: %s\n", dlerror());
     return 1;
+  }
+
+  // A second suite can live in the same host process.  Loading a copy of this
+  // module catches NAM's process-global registries being interposed between
+  // DSOs: the duplicate static registration used to abort the host.
+  std::error_code ec;
+  const auto copy = std::filesystem::temp_directory_path(ec) /
+                    ("BassSuite-coload-" + std::to_string(::getpid()) + ".clap");
+  if (!ec) {
+    std::filesystem::copy_file(path, copy,
+                               std::filesystem::copy_options::overwrite_existing,
+                               ec);
+    if (!ec) {
+      void* second = dlopen(copy.c_str(), RTLD_NOW | RTLD_LOCAL);
+      if (!second) {
+        std::fprintf(stderr, "second DSO load failed: %s\n", dlerror());
+        return 1;
+      }
+      dlclose(second);
+      std::filesystem::remove(copy, ec);
+    }
   }
   auto* entry = static_cast<const clap_plugin_entry_t*>(
       dlsym(lib, "clap_entry"));
@@ -190,6 +213,6 @@ int main(int argc, char** argv) {
   plugin->destroy(plugin);
   entry->deinit();
   dlclose(lib);
-  std::printf("amp_clap_host: ok\n");
+  std::printf("bass_clap_host: ok\n");
   return 0;
 }

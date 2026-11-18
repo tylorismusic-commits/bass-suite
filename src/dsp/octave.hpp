@@ -19,6 +19,10 @@ public:
     track_.set(600.0f, sr_);
     toneL_.set(1200.0f, sr_);
     toneR_.set(1200.0f, sr_);
+    tone2L_.set(1200.0f, sr_);
+    tone2R_.set(1200.0f, sr_);
+    envAttack_ = timeCoeff(4.0f, sr_);
+    envRelease_ = timeCoeff(70.0f, sr_);
     level_.setTime(10.0f, sr_);
     dry_.setTime(10.0f, sr_);
     enable_.setTime(8.0f, sr_);
@@ -32,17 +36,22 @@ public:
     const float hz = 400.0f * std::pow(8.0f, clampf(c.octTone, 0.0f, 1.0f));
     toneL_.set(hz, sr_);
     toneR_.set(hz, sr_);
+    tone2L_.set(hz, sr_);
+    tone2R_.set(hz, sr_);
   }
 
   void reset() noexcept {
     track_.reset();
     toneL_.reset();
     toneR_.reset();
+    tone2L_.reset();
+    tone2R_.reset();
     level_.snap();
     dry_.snap();
     enable_.snap();
     subSign_ = 1.0f;
     prev_ = 0.0f;
+    env_ = 0.0f;
   }
 
   void process(float& l, float& r) noexcept {
@@ -54,9 +63,17 @@ public:
     }
     prev_ = tracked;
 
-    const float square = subSign_ * 0.65f;
-    const float wetL = toneL_.process(square);
-    const float wetR = toneR_.process(square);
+    // Track the input envelope, so quiet notes get a quiet sub-octave.  The
+    // old fixed 0.65 square made the pedal only usable at very low Level.
+    const float envTarget = std::fabs(tracked);
+    const float envCoeff = envTarget > env_ ? envAttack_ : envRelease_;
+    env_ = envTarget + envCoeff * (env_ - envTarget);
+    const float amp = 0.50f * clampf(env_ * 3.0f - 0.02f, 0.0f, 1.0f);
+    const float square = subSign_ * amp;
+    // Two cascaded poles round the square into a bass sub-octave instead of a
+    // fizzy buzzer.
+    const float wetL = tone2L_.process(toneL_.process(square));
+    const float wetR = tone2R_.process(toneR_.process(square));
     const float dryAmt = dry_.next();
     const float wetAmt = level_.next();
     const float enable = enable_.next();
@@ -69,10 +86,13 @@ public:
 private:
   float sr_ = 48000.0f;
   OnePoleLP track_;
-  OnePoleLP toneL_, toneR_;
+  OnePoleLP toneL_, toneR_, tone2L_, tone2R_;
   Smoothed level_, dry_, enable_;
   float subSign_ = 1.0f;
   float prev_ = 0.0f;
+  float env_ = 0.0f;
+  float envAttack_ = 0.0f;
+  float envRelease_ = 0.0f;
 };
 
 } // namespace bass

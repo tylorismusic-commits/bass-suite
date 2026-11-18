@@ -171,7 +171,7 @@ inline constexpr ParamSpec kParamSpecs[P_COUNT] = {
     {"cab_set", "Cabinet", "Cab", 0.0, 5.0, 3.0, true, false, false, nullptr,
      labels(kCabSetLabels)},
     {"oct_on", "Octave", "Octave", 0.0, 1.0, 0.0, true, false, true, nullptr, {}},
-    {"oct_level", "Octave", "Octave", 0.0, 1.0, 0.35, false, false, false,
+    {"oct_level", "Octave", "Octave", 0.0, 1.0, 0.28, false, false, false,
      nullptr, {}},
     {"oct_dry", "Dry", "Octave", 0.0, 1.0, 1.0, false, false, false, nullptr, {}},
     {"oct_tone", "Tone", "Octave", 0.0, 1.0, 0.5, false, false, false, nullptr, {}},

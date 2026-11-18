@@ -35,6 +35,13 @@ target_include_directories(nam_core PUBLIC
 target_compile_features(nam_core PUBLIC cxx_std_20)
 target_compile_definitions(nam_core PUBLIC NAM_SAMPLE_FLOAT)
 set_target_properties(nam_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  # Two suites can be loaded into the same host.  NAM has process-global
+  # registries; leaving its symbols visible lets one plug-in's copy interpose
+  # on the other's, so the second dlopen sees "already registered" and aborts.
+  target_compile_options(nam_core PRIVATE
+    -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 
 set(BASS_UI_SOURCES src/ui/panel.cpp)
 set(BASS_DSP_SOURCES
