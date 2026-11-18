@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.3 — 2026-11-18
+
+Preset handling is now complete.
+
+- DUPLICATE copies the selected factory or user preset; factory copies capture
+  the current state.
+- EXPORT writes the current preset to `~/Documents/Bass Suite Presets`.
+- Drag a `.bass-suite` file onto the panel to import it; collisions get a
+  `(2)` suffix.
+- Rename conflicts show inline feedback; overwriting a different existing
+  preset asks for a second Enter.
+- The dirty marker follows the live parameters, including host automation.
+- The list rescans on open and every two seconds while open.
+- Imported/exported values are sanitised before reaching the engine.
+
 ## 0.1.2 — 2026-11-18
 
 - User presets in the preset browser. SAVE stores the complete bass, cab,

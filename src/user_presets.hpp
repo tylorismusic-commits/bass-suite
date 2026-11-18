@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -35,6 +36,15 @@ inline std::filesystem::path userPresetDir() {
   return base / "BassSuite" / "presets";
 }
 
+inline std::filesystem::path userPresetExportDir() {
+  const char* xdg = std::getenv("XDG_CONFIG_HOME");
+  (void)xdg;
+  const char* home = std::getenv("HOME");
+  const std::filesystem::path base =
+      home && *home ? std::filesystem::path(home) : std::filesystem::path(".");
+  return base / "Documents" / "Bass Suite Presets";
+}
+
 inline std::string sanitizePresetName(const std::string& raw) {
   std::string out;
   for (char c : raw) {
@@ -52,6 +62,70 @@ inline std::string sanitizePresetName(const std::string& raw) {
   out = out.substr(a, b - a + 1);
   if (out.size() > 60) out.resize(60);
   return out;
+}
+
+inline void sanitizePresetValues(std::vector<double>& values) {
+  for (uint32_t i = 0; i < values.size() && i < P_COUNT; ++i) {
+    if (!std::isfinite(values[i])) {
+      values[i] = kParamSpecs[i].def;
+    }
+    values[i] = std::min(std::max(values[i], kParamSpecs[i].min),
+                         kParamSpecs[i].max);
+  }
+}
+
+inline std::string uniquePresetName(const std::filesystem::path& dir,
+                                    const std::string& raw) {
+  std::string base = sanitizePresetName(raw);
+  if (base.empty()) base = "Preset";
+  if (base.size() > 50) base.resize(50);
+  std::error_code ec;
+  std::string candidate = base;
+  int suffix = 2;
+  while (std::filesystem::exists(dir / (candidate + kUserPresetExt), ec)) {
+    ec.clear();
+    candidate = base + " (" + std::to_string(suffix++) + ")";
+  }
+  return candidate;
+}
+
+inline bool readUserPresetFile(const std::filesystem::path& path,
+                               UserPreset& preset) {
+  std::ifstream in(path);
+  if (!in) return false;
+  std::string header;
+  std::getline(in, header);
+  if (header.rfind("BassSuitePreset ", 0) != 0) return false;
+
+  preset = UserPreset{};
+  preset.values.assign(P_COUNT, 0.0);
+  for (uint32_t i = 0; i < P_COUNT; ++i) {
+    preset.values[i] = kParamSpecs[i].def;
+  }
+  std::string line;
+  bool haveValue = false;
+  while (std::getline(in, line)) {
+    if (line.empty()) continue;
+    if (line.rfind("name ", 0) == 0) {
+      preset.name = sanitizePresetName(line.substr(5));
+      continue;
+    }
+    const size_t space = line.find(' ');
+    if (space == std::string::npos) continue;
+    const int index = std::atoi(line.substr(0, space).c_str());
+    if (index < 0 || index >= static_cast<int>(P_COUNT)) continue;
+    char* end = nullptr;
+    const double value = std::strtod(line.c_str() + space + 1, &end);
+    if (end == line.c_str() + space + 1) continue;
+    preset.values[static_cast<size_t>(index)] = value;
+    haveValue = true;
+  }
+  if (preset.name.empty()) {
+    preset.name = sanitizePresetName(path.stem().string());
+  }
+  if (preset.name.empty() || !haveValue) return false;
+  sanitizePresetValues(preset.values);
+  return true;
 }
 
 inline bool writeUserPreset(const std::filesystem::path& dir,
@@ -136,58 +210,24 @@ inline std::vector<UserPreset> loadUserPresets(
   std::sort(files.begin(), files.end());
 
   for (const auto& path : files) {
-    std::ifstream in(path);
-    if (!in) continue;
-    std::string header;
-    std::getline(in, header);
-    if (header.rfind("BassSuitePreset ", 0) != 0) continue;
-
     UserPreset preset;
-    preset.values.assign(P_COUNT, 0.0);
-    for (uint32_t i = 0; i < P_COUNT; ++i) {
-      preset.values[i] = kParamSpecs[i].def;
+    if (readUserPresetFile(path, preset)) {
+      out.push_back(std::move(preset));
     }
-    std::string line;
-    bool haveValue = false;
-    while (std::getline(in, line)) {
-      if (line.empty()) continue;
-      if (line.rfind("name ", 0) == 0) {
-        preset.name = sanitizePresetName(line.substr(5));
-        continue;
-      }
-      const size_t space = line.find(' ');
-      if (space == std::string::npos) continue;
-      const int index = std::atoi(line.substr(0, space).c_str());
-      if (index < 0 || index >= static_cast<int>(P_COUNT)) continue;
-      preset.values[static_cast<size_t>(index)] =
-          std::atof(line.substr(space + 1).c_str());
-      haveValue = true;
-    }
-    if (preset.name.empty()) {
-      preset.name = sanitizePresetName(path.stem().string());
-    }
-    if (preset.name.empty() || !haveValue) continue;
-    out.push_back(std::move(preset));
   }
 
   std::sort(out.begin(), out.end(),
             [](const UserPreset& a, const UserPreset& b) {
-              const std::string al = [](const std::string& v) {
-                std::string s = v;
-                std::transform(s.begin(), s.end(), s.begin(),
-                               [](unsigned char c) {
-                                 return static_cast<char>(std::tolower(c));
-                               });
-                return s;
-              }(a.name);
-              const std::string bl = [](const std::string& v) {
-                std::string s = v;
-                std::transform(s.begin(), s.end(), s.begin(),
-                               [](unsigned char c) {
-                                 return static_cast<char>(std::tolower(c));
-                               });
-                return s;
-              }(b.name);
+              std::string al = a.name;
+              std::string bl = b.name;
+              std::transform(al.begin(), al.end(), al.begin(),
+                             [](unsigned char c) {
+                               return static_cast<char>(std::tolower(c));
+                             });
+              std::transform(bl.begin(), bl.end(), bl.begin(),
+                             [](unsigned char c) {
+                               return static_cast<char>(std::tolower(c));
+                             });
               return al < bl;
             });
   return out;

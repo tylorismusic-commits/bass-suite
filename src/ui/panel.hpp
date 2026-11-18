@@ -34,6 +34,12 @@ struct PanelState {
   bool deletePresetConfirm = false;
   std::string presetText;
   bool presetTextFresh = false;
+  std::string presetError;
+  bool presetOverwriteConfirm = false;
+  std::string presetNotice;
+  double presetNoticeUntil = 0.0;
+  std::vector<double> presetSnapshot;
+  int presetScanTicks = 60;
   float inLevel = 0.0f;
   float outLevel = 0.0f;
   float inLevelL = 0.0f;
@@ -66,7 +72,7 @@ public:
   Panel& operator=(const Panel&) = delete;
 
   void loadFont(const std::string& dir);
-  void tick(const Shared& shared, PanelState& state) const;
+  void tick(const Shared& shared, PanelState& state);
   void draw(cairo_t* cr, Shared& shared, const PanelState& state);
 
   bool pointerDown(Shared& shared, PanelState& state, double x, double y,
@@ -83,7 +89,13 @@ public:
   void drawPresetList(cairo_t* cr, const Shared& shared,
                       const PanelState& state) const;
   void reloadUserPresets();
+  void rescanUserPresets(PanelState& state);
+  void setPresetNotice(PanelState& state, const std::string& text) const;
   bool commitPresetName(Shared& shared, PanelState& state);
+  void duplicatePreset(Shared& shared, PanelState& state);
+  void exportPreset(const Shared& shared, PanelState& state) const;
+  bool importPresetFile(Shared& shared, PanelState& state,
+                        const std::string& path);
   void markEdited(PanelState& state) const { state.presetDirty = true; }
   bool wheel(Shared& shared, PanelState& state, double x, double y, double dy);
   void beginTextEntry(Shared& shared, PanelState& state, double x, double y);
@@ -100,7 +112,7 @@ public:
                       const std::string& path) const;
   // Routes a drag-and-dropped file by extension/current page.
   bool importDroppedFile(Shared& shared, PanelState& state,
-                         const std::string& path) const;
+                         const std::string& path);
 
   bool dragging() const { return dragParam_ >= 0; }
 
