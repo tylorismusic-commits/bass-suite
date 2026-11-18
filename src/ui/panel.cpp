@@ -135,6 +135,7 @@ constexpr double kPresetH = 36.0;
 constexpr double kListY = 54.0;
 constexpr double kListRow = 22.0;
 constexpr int kListVisible = 10;
+constexpr double kListFooterH = 42.0;
 
 constexpr double kUserBoxX = 60.0;
 constexpr double kUserBoxY = 300.0;
@@ -244,19 +245,6 @@ double nowMs() {
       .count();
 }
 
-double presetResetValue(const PanelState& state, uint32_t param) {
-  double value = kParamSpecs[param].def;
-  if (state.presetIndex >= 0 && state.presetIndex < kPresetCount) {
-    for (const PresetValue& v : kPresets[state.presetIndex].values) {
-      if (v.param == static_cast<int>(param)) {
-        value = v.value;
-        break;
-      }
-    }
-  }
-  return value;
-}
-
 std::string selectedUserIrName(const Shared& shared, const PanelState& state) {
   const int model =
       std::min(std::max(static_cast<int>(shared.get(P_MODEL) + 0.5), 0), 3);
@@ -292,6 +280,7 @@ Panel::Panel() {
   fallbackFont_ = cairo_toy_font_face_create(
       "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
   font_ = fallbackFont_;
+  reloadUserPresets();
 }
 
 Panel::~Panel() {
@@ -310,6 +299,28 @@ Panel::~Panel() {
   if (ft_) {
     FT_Done_FreeType(static_cast<FT_Library>(ft_));
   }
+}
+
+double Panel::presetResetValue(const PanelState& state,
+                               uint32_t param) const {
+  double value = kParamSpecs[param].def;
+  if (state.presetIndex >= kPresetCount) {
+    const int user = state.presetIndex - kPresetCount;
+    if (user >= 0 && user < static_cast<int>(userPresets_.size()) &&
+        param < userPresets_[static_cast<size_t>(user)].values.size()) {
+      value = userPresets_[static_cast<size_t>(user)].values[param];
+    }
+    return value;
+  }
+  if (state.presetIndex >= 0 && state.presetIndex < kPresetCount) {
+    for (const PresetValue& v : kPresets[state.presetIndex].values) {
+      if (v.param == static_cast<int>(param)) {
+        value = v.value;
+        break;
+      }
+    }
+  }
+  return value;
 }
 
 void Panel::loadFont(const std::string& dir) {
@@ -821,8 +832,9 @@ bool Panel::wheel(Shared& shared, PanelState& state, double x, double y,
     return true;
   }
   if (state.presetOpen && x >= kPresetX && x <= kPresetX + kPresetW &&
-      y >= kListY && y <= kListY + kListVisible * kListRow + 10) {
-    const int maxScroll = std::max(0, kPresetCount - kListVisible);
+      y >= kListY &&
+      y <= kListY + kListVisible * kListRow + kListFooterH + 10) {
+    const int maxScroll = std::max(0, presetCount() - kListVisible);
     state.presetScroll += dy > 0.0 ? -1 : 1;
     state.presetScroll = std::min(std::max(state.presetScroll, 0), maxScroll);
     return true;
@@ -938,6 +950,9 @@ void Panel::drawPresetBar(cairo_t* cr, const Shared& shared,
   char buf[160];
   if (state.presetIndex < 0) {
     std::snprintf(buf, sizeof(buf), "Manual — %s", modelName(model));
+  } else if (state.presetIndex >= kPresetCount) {
+    std::snprintf(buf, sizeof(buf), "%s%s", presetName(state.presetIndex),
+                  state.presetDirty ? " *" : "");
   } else {
     const int index =
         std::min(std::max(state.presetIndex, 0), kPresetCount - 1);
@@ -956,7 +971,10 @@ void Panel::drawPresetList(cairo_t* cr, const Shared& shared,
                            const PanelState& state) const {
   const int model = static_cast<int>(shared.get(P_MODEL) + 0.5);
   const Skin skin = skinFor(model);
-  const double h = kListVisible * kListRow + 10.0;
+  const int count = presetCount();
+  const int maxScroll = std::max(0, count - kListVisible);
+  const int scroll = std::min(std::max(state.presetScroll, 0), maxScroll);
+  const double h = kListVisible * kListRow + kListFooterH + 10.0;
   roundRect(cr, kPresetX, kListY, kPresetW, h, 5);
   setRgb(cr, mix(skin.headerBg, {0, 0, 0}, 0.15));
   cairo_fill(cr);
@@ -966,11 +984,12 @@ void Panel::drawPresetList(cairo_t* cr, const Shared& shared,
   cairo_stroke(cr);
 
   cairo_save(cr);
-  roundRect(cr, kPresetX + 1, kListY + 1, kPresetW - 2, h - 2, 4);
+  roundRect(cr, kPresetX + 1, kListY + 1, kPresetW - 2,
+            kListVisible * kListRow + 8, 4);
   cairo_clip(cr);
   for (int row = 0; row < kListVisible; ++row) {
-    const int i = state.presetScroll + row;
-    if (i < 0 || i >= kPresetCount) {
+    const int i = scroll + row;
+    if (i < 0 || i >= count) {
       break;
     }
     const double y = kListY + 5 + row * kListRow;
@@ -979,24 +998,22 @@ void Panel::drawPresetList(cairo_t* cr, const Shared& shared,
       setRgb(cr, skin.accent, 0.35);
       cairo_fill(cr);
     }
-    text(cr, kPresets[i].name, kPresetX + 12, y + 15, 11.5, 0,
+    text(cr, presetName(i), kPresetX + 12, y + 15, 11.5, 0,
          skin.btnText.r, skin.btnText.g, skin.btnText.b);
-    text(cr, kPresets[i].category, kPresetX + kPresetW - 10, y + 15, 9.5, 2,
-         skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
+    text(cr, i < kPresetCount ? kPresets[i].category : "User",
+         kPresetX + kPresetW - 10, y + 15, 9.5, 2, skin.legendDim.r,
+         skin.legendDim.g, skin.legendDim.b);
   }
   cairo_restore(cr);
 
   // Slim scroll indicator.
-  if (kPresetCount > kListVisible) {
+  if (count > kListVisible) {
     const double trackY = kListY + 6;
-    const double trackH = h - 12;
-    const double thumbH =
-        std::max(12.0, trackH * kListVisible / kPresetCount);
-    const int maxScroll = kPresetCount - kListVisible;
+    const double trackH = kListVisible * kListRow - 2;
+    const double thumbH = std::max(12.0, trackH * kListVisible / count);
     const double thumbY =
         trackY + (trackH - thumbH) *
-                     (maxScroll > 0 ? state.presetScroll / double(maxScroll)
-                                    : 0.0);
+                     (maxScroll > 0 ? scroll / double(maxScroll) : 0.0);
     cairo_rectangle(cr, kPresetX + kPresetW - 4, trackY, 2.0, trackH);
     setRgb(cr, {0, 0, 0}, 0.45);
     cairo_fill(cr);
@@ -1004,10 +1021,55 @@ void Panel::drawPresetList(cairo_t* cr, const Shared& shared,
     setRgb(cr, skin.accent, 0.8);
     cairo_fill(cr);
   }
+
+  const double footerY = kListY + kListVisible * kListRow + 9.0;
+  const bool userCurrent = state.presetIndex >= kPresetCount &&
+                           state.presetIndex < count;
+  if (state.savePreset || state.renamePreset) {
+    const double bx = kPresetX + 10;
+    const double bw = kPresetW - 20;
+    roundRect(cr, bx, footerY, bw, 24, 4);
+    setRgb(cr, {0.035, 0.04, 0.05}, 0.98);
+    cairo_fill(cr);
+    setRgb(cr, skin.tabOn, 0.9);
+    cairo_set_line_width(cr, 1.2);
+    roundRect(cr, bx + 0.5, footerY + 0.5, bw - 1, 23, 4);
+    cairo_stroke(cr);
+    text(cr, state.renamePreset ? "RENAME" : "SAVE AS", bx + 8, footerY + 16,
+         8.0, 0, skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
+    const std::string shown = shorten(state.presetText, 24) + "|";
+    text(cr, shown.c_str(), bx + 68, footerY + 16, 10.5, 0, 0.98, 0.80, 0.32);
+    text(cr, "Enter saves · Esc cancels", bx + bw - 8, footerY + 16, 7.5, 2,
+         skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
+    return;
+  }
+
+  auto button = [&](double x, double w, const char* label, bool accent) {
+    roundRect(cr, x, footerY, w, 24, 4);
+    setRgb(cr, accent ? skin.accent : mix(skin.headerBg, {1, 1, 1}, 0.08));
+    cairo_fill(cr);
+    text(cr, label, x + w * 0.5, footerY + 16, 8.0, 1,
+         accent ? 0.10 : skin.btnText.r, accent ? 0.08 : skin.btnText.g,
+         accent ? 0.05 : skin.btnText.b);
+  };
+  button(kPresetX + 10, 62, "SAVE", false);
+  if (userCurrent) {
+    button(kPresetX + 80, 72, "RENAME", false);
+    button(kPresetX + 160, 72, state.deletePresetConfirm ? "CONFIRM" : "DELETE",
+           state.deletePresetConfirm);
+  }
+  button(kPresetX + kPresetW - 78, 68, "CLOSE", false);
 }
 
 bool Panel::handlePresetClick(Shared& shared, PanelState& state, double x,
                               double y) {
+  // While the name field is open, swallow clicks so the list cannot be
+  // navigated out from under the editor.
+  if (state.savePreset || state.renamePreset) {
+    return true;
+  }
+  const int count = presetCount();
+  const int maxScroll = std::max(0, count - kListVisible);
   const bool inBar = x >= kPresetX && x <= kPresetX + kPresetW &&
                      y >= kPresetY && y <= kPresetY + kPresetH;
   if (!state.presetOpen) {
@@ -1020,25 +1082,28 @@ bool Panel::handlePresetClick(Shared& shared, PanelState& state, double x,
       return true;
     }
     if (x >= kPresetX + kPresetW - 36) {
-      const int next = state.presetIndex < 0
-                           ? 0
-                           : std::min(kPresetCount - 1, state.presetIndex + 1);
+      const int next =
+          state.presetIndex < 0
+              ? 0
+              : std::min(count - 1, state.presetIndex + 1);
       applyPreset(shared, state, next);
       return true;
     }
     state.presetOpen = true;
+    state.deletePresetConfirm = false;
     if (state.presetIndex >= 0) {
       state.presetScroll =
           std::min(std::max(state.presetIndex - kListVisible / 2, 0),
-                   std::max(0, kPresetCount - kListVisible));
+                   maxScroll);
     } else {
       state.presetScroll = 0;
     }
     return true;
   }
+  const int scroll = std::min(std::max(state.presetScroll, 0), maxScroll);
   for (int row = 0; row < kListVisible; ++row) {
-    const int i = state.presetScroll + row;
-    if (i < 0 || i >= kPresetCount) {
+    const int i = scroll + row;
+    if (i < 0 || i >= count) {
       break;
     }
     const double rowY = kListY + 5 + row * kListRow;
@@ -1049,15 +1114,72 @@ bool Panel::handlePresetClick(Shared& shared, PanelState& state, double x,
       return true;
     }
   }
+
+  const double footerY = kListY + kListVisible * kListRow + 9.0;
+  const bool userCurrent = state.presetIndex >= kPresetCount &&
+                           state.presetIndex < count;
+  const bool inFooter = y >= footerY && y <= footerY + 24;
+  if (inFooter && x >= kPresetX + 10 && x <= kPresetX + 72) {
+    state.savePreset = true;
+    state.renamePreset = false;
+    state.deletePresetConfirm = false;
+    state.presetText = userCurrent ? presetName(state.presetIndex) : "My Preset";
+    state.presetTextFresh = true;
+    return true;
+  }
+  if (userCurrent && inFooter && x >= kPresetX + 80 && x <= kPresetX + 152) {
+    state.renamePreset = true;
+    state.savePreset = false;
+    state.deletePresetConfirm = false;
+    state.presetText = presetName(state.presetIndex);
+    state.presetTextFresh = true;
+    return true;
+  }
+  if (userCurrent && inFooter && x >= kPresetX + 160 &&
+      x <= kPresetX + 232) {
+    if (!state.deletePresetConfirm) {
+      state.deletePresetConfirm = true;
+      return true;
+    }
+    const std::string name = presetName(state.presetIndex);
+    if (deleteUserPreset(userPresetDir(), name)) {
+      reloadUserPresets();
+      state.presetIndex = -1;
+      state.presetDirty = true;
+    }
+    state.deletePresetConfirm = false;
+    state.presetOpen = false;
+    return true;
+  }
+  state.deletePresetConfirm = false;
+  if (inFooter && x >= kPresetX + kPresetW - 78 &&
+      x <= kPresetX + kPresetW - 10) {
+    state.presetOpen = false;
+    return true;
+  }
   if (inBar || x < kPresetX || x > kPresetX + kPresetW || y < kListY ||
-      y > kListY + kListVisible * kListRow + 10) {
+      y > kListY + kListVisible * kListRow + kListFooterH + 10) {
     state.presetOpen = false;
   }
   return true;
 }
 
 void Panel::applyPreset(Shared& shared, PanelState& state, int index) const {
-  if (index < 0 || index >= kPresetCount) {
+  if (index < 0 || index >= presetCount()) {
+    return;
+  }
+  if (index >= kPresetCount) {
+    const int user = index - kPresetCount;
+    if (user < 0 || user >= static_cast<int>(userPresets_.size())) {
+      return;
+    }
+    const UserPreset& p = userPresets_[static_cast<size_t>(user)];
+    for (uint32_t i = 0; i < P_COUNT && i < p.values.size(); ++i) {
+      shared.set(i, p.values[i]);
+    }
+    shared.requestReload();
+    state.presetIndex = index;
+    state.presetDirty = false;
     return;
   }
   const Preset& p = kPresets[index];
@@ -1075,6 +1197,77 @@ void Panel::applyPreset(Shared& shared, PanelState& state, int index) const {
   shared.requestReload();
   state.presetIndex = index;
   state.presetDirty = false;
+}
+
+int Panel::presetCount() const {
+  return kPresetCount + static_cast<int>(userPresets_.size());
+}
+
+const char* Panel::presetName(int index) const {
+  if (index >= kPresetCount) {
+    const int user = index - kPresetCount;
+    if (user >= 0 && user < static_cast<int>(userPresets_.size())) {
+      return userPresets_[static_cast<size_t>(user)].name.c_str();
+    }
+    return "";
+  }
+  if (index >= 0 && index < kPresetCount) {
+    return kPresets[index].name;
+  }
+  return "";
+}
+
+void Panel::reloadUserPresets() {
+  userPresets_ = loadUserPresets(userPresetDir());
+}
+
+bool Panel::commitPresetName(Shared& shared, PanelState& state) {
+  const std::string name = sanitizePresetName(state.presetText);
+  if (name.empty()) {
+    return false;
+  }
+  if (state.savePreset) {
+    if (!saveUserPreset(userPresetDir(), name, shared)) {
+      return false;
+    }
+    reloadUserPresets();
+    int index = -1;
+    for (int i = 0; i < static_cast<int>(userPresets_.size()); ++i) {
+      if (userPresets_[static_cast<size_t>(i)].name == name) {
+        index = kPresetCount + i;
+        break;
+      }
+    }
+    state.presetIndex = index;
+    state.presetDirty = false;
+  } else if (state.renamePreset) {
+    const int user = state.presetIndex - kPresetCount;
+    if (user < 0 || user >= static_cast<int>(userPresets_.size())) {
+      return false;
+    }
+    const std::string oldName = userPresets_[static_cast<size_t>(user)].name;
+    const std::vector<double> values =
+        userPresets_[static_cast<size_t>(user)].values;
+    if (!renameUserPreset(userPresetDir(), oldName, name, values)) {
+      return false;
+    }
+    reloadUserPresets();
+    int index = -1;
+    for (int i = 0; i < static_cast<int>(userPresets_.size()); ++i) {
+      if (userPresets_[static_cast<size_t>(i)].name == name) {
+        index = kPresetCount + i;
+        break;
+      }
+    }
+    state.presetIndex = index;
+  }
+  state.savePreset = false;
+  state.renamePreset = false;
+  state.deletePresetConfirm = false;
+  state.presetOpen = false;
+  state.presetText.clear();
+  state.presetTextFresh = false;
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -2406,6 +2599,11 @@ void Panel::beginTextEntry(Shared& shared, PanelState& state, double x,
                            double y) {
   (void)shared;
   state.presetOpen = false;
+  state.savePreset = false;
+  state.renamePreset = false;
+  state.deletePresetConfirm = false;
+  state.presetText.clear();
+  state.presetTextFresh = false;
   for (const Widget& w : widgets_) {
     if (!hitWidget(w, x, y)) {
       continue;
@@ -2431,6 +2629,38 @@ bool Panel::hitTextEntry(double x, double y) const {
 }
 
 bool Panel::textKey(Shared& shared, PanelState& state, int key, char ch) {
+  if (state.savePreset || state.renamePreset) {
+    if (key == kTextEnter) {
+      return commitPresetName(shared, state);
+    }
+    if (key == kTextEscape) {
+      state.savePreset = false;
+      state.renamePreset = false;
+      state.presetText.clear();
+      state.presetTextFresh = false;
+      state.presetOpen = false;
+      return true;
+    }
+    if (key == kTextBackspace) {
+      if (state.presetTextFresh) {
+        state.presetText.clear();
+        state.presetTextFresh = false;
+      } else if (!state.presetText.empty()) {
+        state.presetText.pop_back();
+      }
+      return true;
+    }
+    if (ch >= 32 && ch < 127) {
+      if (state.presetTextFresh) {
+        state.presetText.clear();
+        state.presetTextFresh = false;
+      }
+      if (state.presetText.size() < 60) {
+        state.presetText.push_back(ch);
+      }
+    }
+    return true;
+  }
   if (!editing_) {
     return false;
   }

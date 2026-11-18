@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 — 2026-11-18
+
+- User presets in the preset browser. SAVE stores the complete bass, cab,
+  pedal and output state under `~/.config/BassSuite/presets`; user presets are
+  listed after the factory bank, and can be renamed or deleted from the
+  browser footer. Loading a user preset uses the click-free switch.
+
 ## 0.1.1 — 2026-11-18
 
 - Amp switching no longer pops. The two engines were summed with an

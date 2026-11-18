@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "params.hpp"
+#include "user_presets.hpp"
 
 namespace bass {
 
@@ -28,6 +29,11 @@ struct PanelState {
   bool presetDirty = false;
   bool presetOpen = false;
   int presetScroll = 0;
+  bool savePreset = false;
+  bool renamePreset = false;
+  bool deletePresetConfirm = false;
+  std::string presetText;
+  bool presetTextFresh = false;
   float inLevel = 0.0f;
   float outLevel = 0.0f;
   float inLevelL = 0.0f;
@@ -70,10 +76,14 @@ public:
   void pointerUp();
   bool handlePresetClick(Shared& shared, PanelState& state, double x, double y);
   void applyPreset(Shared& shared, PanelState& state, int index) const;
+  int presetCount() const;
+  const char* presetName(int index) const;
   void drawPresetBar(cairo_t* cr, const Shared& shared,
                      const PanelState& state) const;
   void drawPresetList(cairo_t* cr, const Shared& shared,
                       const PanelState& state) const;
+  void reloadUserPresets();
+  bool commitPresetName(Shared& shared, PanelState& state);
   void markEdited(PanelState& state) const { state.presetDirty = true; }
   bool wheel(Shared& shared, PanelState& state, double x, double y, double dy);
   void beginTextEntry(Shared& shared, PanelState& state, double x, double y);
@@ -181,12 +191,14 @@ private:
   void text(cairo_t* cr, const char* s, double x, double y, double size,
             int align, double r, double g, double b) const;
 
+  double presetResetValue(const PanelState& state, uint32_t param) const;
   double knobValue(const Shared& shared, const Widget& w) const;
   bool isLit(const Shared& shared, const PanelState& state,
              const Widget& w) const;
   bool hitWidget(const Widget& w, double x, double y) const;
 
   std::vector<Widget> widgets_;
+  std::vector<UserPreset> userPresets_;
   int dragParam_ = -1;
   double dragStartY_ = 0.0;
   double dragStartValue_ = 0.0;

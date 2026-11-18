@@ -1,6 +1,6 @@
 # Bass Suite
 
-**Version 0.1.1 — Linux x86_64** · GPL-3.0-or-later
+**Version 0.1.2 — Linux x86_64** · GPL-3.0-or-later
 
 A bass tracking plugin in the Suite visual language: four bass amps, six
 generated CC0 cabinets, a compressor, octave and bass-safe drive, user IRs and
@@ -103,7 +103,8 @@ reference IR is bundled. See `assets/irs/README.md`.
 
 0.1.0 is the first working vertical slice:
 
-- 4 amps, 6 cabs, Comp/Octave/Drive, user IRs, NAM, OUT page, 15 presets,
+- 4 amps, 6 cabs, Comp/Octave/Drive, user IRs, NAM, OUT page, 15 factory
+  presets plus your own saved presets,
   CLAP + LV2.
 - 1040×640 panel, resizable 0.5×–2×.
 - Tests: DSP, panel, layout, geometry, TTL, CLAP and LV2 host tests.
