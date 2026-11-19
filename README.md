@@ -1,6 +1,6 @@
 # Bass Suite
 
-**Version 0.1.3 — Linux x86_64** · GPL-3.0-or-later
+**Version 0.1.4 — Linux x86_64** · GPL-3.0-or-later
 
 A bass tracking plugin in the Suite visual language: four bass amps, six
 generated CC0 cabinets, a compressor, octave and bass-safe drive, user IRs and
@@ -71,6 +71,15 @@ The plugin starts on **SVT + 8×10**, the classic big-bass starting point.
 - 4-band output EQ: Low, Low Mid, High Mid, High.
 - HPF and LPF with a live response curve.
 - Limiter with threshold, plus Output trim and stereo meters.
+
+### TUNE
+
+![Bass Suite — tuner](docs/screenshots/tune.png)
+
+- Chromatic tuner tapping the input before Comp, Octave and Drive.
+- Note name with octave, cents, frequency and a ±50-cent bar.
+- Green **IN TUNE** state inside ±5 cents, with TUNE UP / TUNE DOWN hints.
+- Opens with the **TUNE** pill; analysis only runs while the page is open.
 
 ## Build
 

@@ -36,13 +36,12 @@ Preset handling is now complete.
 - Added mid-note CLAP model-switch, same-amp preset-reload and NAM-switch
   continuity tests.
 
-## Unreleased
+## 0.1.4 — 2026-11-19
 
-- Added a chromatic input tuner page (TUNE pill) with note, octave, cents and
-  frequency display.
-
-## Unreleased
-
+- New chromatic tuner page, opened with the **TUNE** pill. It shows the note
+  and octave, cents, frequency and a ±50-cent bar, with a green in-tune state
+  and TUNE UP / TUNE DOWN hints. The detector taps the input before Comp,
+  Octave and Drive and only runs while the page is open.
 - Hide NAM's internal symbols so Bass Suite can load after Amp Suite in the
   same host process without aborting on duplicate NAM registration.
 - Make the octave wet level follow the input envelope and round the square
