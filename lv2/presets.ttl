@@ -27,6 +27,10 @@
     a pset:Bank ;
     rdfs:label "Studio" .
 
+<https://github.com/tylorismusic-commits/bass-suite#bank_user>
+    a pset:Bank ;
+    rdfs:label "User" .
+
 <https://github.com/tylorismusic-commits/bass-suite#preset_svt-classic>
     a pset:Preset ;
     lv2:appliesTo <https://github.com/tylorismusic-commits/bass-suite> ;
@@ -580,4 +584,122 @@
     [ lv2:symbol "limiter_on" ; pset:value 1 ] ,
     [ lv2:symbol "limiter_threshold" ; pset:value 0.9 ] ,
     [ lv2:symbol "nam_on" ; pset:value 0 ] .
+
+<https://github.com/tylorismusic-commits/bass-suite#preset_pop-punk-bass>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/tylorismusic-commits/bass-suite> ;
+    rdfs:label "Pop Punk Bass" ;
+    rdfs:comment "User" ;
+    pset:bank <https://github.com/tylorismusic-commits/bass-suite#bank_user> ;
+    lv2:port
+    [ lv2:symbol "model" ; pset:value 2 ] ,
+    [ lv2:symbol "power" ; pset:value 1 ] ,
+    [ lv2:symbol "input" ; pset:value 0 ] ,
+    [ lv2:symbol "gain" ; pset:value 0.451 ] ,
+    [ lv2:symbol "bass" ; pset:value 0.58 ] ,
+    [ lv2:symbol "mid" ; pset:value 0.46 ] ,
+    [ lv2:symbol "treble" ; pset:value 0.52 ] ,
+    [ lv2:symbol "presence" ; pset:value 0.46 ] ,
+    [ lv2:symbol "resonance" ; pset:value 0.55 ] ,
+    [ lv2:symbol "master" ; pset:value 1 ] ,
+    [ lv2:symbol "output" ; pset:value 0.3695 ] ,
+    [ lv2:symbol "cab" ; pset:value 0 ] ,
+    [ lv2:symbol "cab_mic" ; pset:value 0 ] ,
+    [ lv2:symbol "cab_level" ; pset:value 0.62 ] ,
+    [ lv2:symbol "cab_lowcut" ; pset:value 0 ] ,
+    [ lv2:symbol "cab_highcut" ; pset:value 1 ] ,
+    [ lv2:symbol "cab_bypass" ; pset:value 0 ] ,
+    [ lv2:symbol "drive_on" ; pset:value 1 ] ,
+    [ lv2:symbol "drive_amount" ; pset:value 0.119 ] ,
+    [ lv2:symbol "drive_tone" ; pset:value 0.5 ] ,
+    [ lv2:symbol "drive_level" ; pset:value 0.7975 ] ,
+    [ lv2:symbol "drive_mix" ; pset:value 0.3075 ] ,
+    [ lv2:symbol "limiter_on" ; pset:value 1 ] ,
+    [ lv2:symbol "limiter_threshold" ; pset:value 0.513 ] ,
+    [ lv2:symbol "user_ir_studio" ; pset:value 0 ] ,
+    [ lv2:symbol "user_ir_flip_top" ; pset:value 0 ] ,
+    [ lv2:symbol "user_ir_svt" ; pset:value 0 ] ,
+    [ lv2:symbol "user_ir_modern" ; pset:value 0 ] ,
+    [ lv2:symbol "amp_bypass" ; pset:value 0 ] ,
+    [ lv2:symbol "nam_on" ; pset:value 0 ] ,
+    [ lv2:symbol "nam_model" ; pset:value 0 ] ,
+    [ lv2:symbol "nam_level" ; pset:value 0.5 ] ,
+    [ lv2:symbol "gate_on" ; pset:value 0 ] ,
+    [ lv2:symbol "gate_thresh" ; pset:value 0.55 ] ,
+    [ lv2:symbol "gate_decay" ; pset:value 0.4 ] ,
+    [ lv2:symbol "cab_set" ; pset:value 3 ] ,
+    [ lv2:symbol "oct_on" ; pset:value 0 ] ,
+    [ lv2:symbol "oct_level" ; pset:value 0.28 ] ,
+    [ lv2:symbol "oct_dry" ; pset:value 1 ] ,
+    [ lv2:symbol "oct_tone" ; pset:value 0.5 ] ,
+    [ lv2:symbol "comp_on" ; pset:value 1 ] ,
+    [ lv2:symbol "comp_amount" ; pset:value 0.3 ] ,
+    [ lv2:symbol "comp_attack" ; pset:value 0.35 ] ,
+    [ lv2:symbol "comp_release" ; pset:value 0.45 ] ,
+    [ lv2:symbol "comp_mix" ; pset:value 0.8 ] ,
+    [ lv2:symbol "out_eq_low" ; pset:value 0.5 ] ,
+    [ lv2:symbol "out_eq_low_mid" ; pset:value 0.5 ] ,
+    [ lv2:symbol "out_eq_high_mid" ; pset:value 0.5 ] ,
+    [ lv2:symbol "out_eq_high" ; pset:value 0.6935 ] ,
+    [ lv2:symbol "out_hpf" ; pset:value 0 ] ,
+    [ lv2:symbol "out_lpf" ; pset:value 1 ] .
+
+<https://github.com/tylorismusic-commits/bass-suite#preset_badabass>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/tylorismusic-commits/bass-suite> ;
+    rdfs:label "badabass" ;
+    rdfs:comment "User" ;
+    pset:bank <https://github.com/tylorismusic-commits/bass-suite#bank_user> ;
+    lv2:port
+    [ lv2:symbol "model" ; pset:value 2 ] ,
+    [ lv2:symbol "power" ; pset:value 1 ] ,
+    [ lv2:symbol "input" ; pset:value 0 ] ,
+    [ lv2:symbol "gain" ; pset:value 0.451 ] ,
+    [ lv2:symbol "bass" ; pset:value 0.58 ] ,
+    [ lv2:symbol "mid" ; pset:value 0.46 ] ,
+    [ lv2:symbol "treble" ; pset:value 0.52 ] ,
+    [ lv2:symbol "presence" ; pset:value 0.46 ] ,
+    [ lv2:symbol "resonance" ; pset:value 0.55 ] ,
+    [ lv2:symbol "master" ; pset:value 1 ] ,
+    [ lv2:symbol "output" ; pset:value 0.3695 ] ,
+    [ lv2:symbol "cab" ; pset:value 0 ] ,
+    [ lv2:symbol "cab_mic" ; pset:value 0 ] ,
+    [ lv2:symbol "cab_level" ; pset:value 0.62 ] ,
+    [ lv2:symbol "cab_lowcut" ; pset:value 0 ] ,
+    [ lv2:symbol "cab_highcut" ; pset:value 1 ] ,
+    [ lv2:symbol "cab_bypass" ; pset:value 0 ] ,
+    [ lv2:symbol "drive_on" ; pset:value 1 ] ,
+    [ lv2:symbol "drive_amount" ; pset:value 0.119 ] ,
+    [ lv2:symbol "drive_tone" ; pset:value 0.5 ] ,
+    [ lv2:symbol "drive_level" ; pset:value 0.7975 ] ,
+    [ lv2:symbol "drive_mix" ; pset:value 0.3075 ] ,
+    [ lv2:symbol "limiter_on" ; pset:value 1 ] ,
+    [ lv2:symbol "limiter_threshold" ; pset:value 0.513 ] ,
+    [ lv2:symbol "user_ir_studio" ; pset:value 0 ] ,
+    [ lv2:symbol "user_ir_flip_top" ; pset:value 0 ] ,
+    [ lv2:symbol "user_ir_svt" ; pset:value 0 ] ,
+    [ lv2:symbol "user_ir_modern" ; pset:value 0 ] ,
+    [ lv2:symbol "amp_bypass" ; pset:value 0 ] ,
+    [ lv2:symbol "nam_on" ; pset:value 0 ] ,
+    [ lv2:symbol "nam_model" ; pset:value 0 ] ,
+    [ lv2:symbol "nam_level" ; pset:value 0.5 ] ,
+    [ lv2:symbol "gate_on" ; pset:value 0 ] ,
+    [ lv2:symbol "gate_thresh" ; pset:value 0.55 ] ,
+    [ lv2:symbol "gate_decay" ; pset:value 0.4 ] ,
+    [ lv2:symbol "cab_set" ; pset:value 3 ] ,
+    [ lv2:symbol "oct_on" ; pset:value 0 ] ,
+    [ lv2:symbol "oct_level" ; pset:value 0.28 ] ,
+    [ lv2:symbol "oct_dry" ; pset:value 1 ] ,
+    [ lv2:symbol "oct_tone" ; pset:value 0.5 ] ,
+    [ lv2:symbol "comp_on" ; pset:value 1 ] ,
+    [ lv2:symbol "comp_amount" ; pset:value 0.3 ] ,
+    [ lv2:symbol "comp_attack" ; pset:value 0.35 ] ,
+    [ lv2:symbol "comp_release" ; pset:value 0.45 ] ,
+    [ lv2:symbol "comp_mix" ; pset:value 0.8 ] ,
+    [ lv2:symbol "out_eq_low" ; pset:value 0.5 ] ,
+    [ lv2:symbol "out_eq_low_mid" ; pset:value 0.5 ] ,
+    [ lv2:symbol "out_eq_high_mid" ; pset:value 0.5 ] ,
+    [ lv2:symbol "out_eq_high" ; pset:value 0.6935 ] ,
+    [ lv2:symbol "out_hpf" ; pset:value 0 ] ,
+    [ lv2:symbol "out_lpf" ; pset:value 1 ] .
 
