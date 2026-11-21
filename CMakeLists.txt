@@ -21,7 +21,13 @@ find_package(Threads REQUIRED)
 pkg_check_modules(LV2 REQUIRED IMPORTED_TARGET lv2)
 pkg_check_modules(CAIRO REQUIRED IMPORTED_TARGET cairo)
 pkg_check_modules(FREETYPE REQUIRED IMPORTED_TARGET freetype2)
-pkg_check_modules(X11 REQUIRED IMPORTED_TARGET x11)
+option(SUITE_NO_X11 "Skip X11 editor targets (portable subset)" OFF)
+if(APPLE OR SUITE_NO_X11)
+  set(SUITE_X11 OFF)
+else()
+  pkg_check_modules(X11 REQUIRED IMPORTED_TARGET x11)
+  set(SUITE_X11 ON)
+endif()
 pkg_check_modules(SAMPLERATE REQUIRED IMPORTED_TARGET samplerate)
 
 file(GLOB BASS_NAM_SOURCES
@@ -56,6 +62,12 @@ set(BASS_GUITARIX_INCLUDES
 # ---------------------------------------------------------------------------
 # CLAP plugin: four bass amps, one X11/Cairo editor.
 # ---------------------------------------------------------------------------
+set(BASS_RESOURCE_FILES
+  "${CMAKE_SOURCE_DIR}/assets/fonts/Jost-ExtraBold.ttf"
+  "${CMAKE_SOURCE_DIR}/assets/fonts/OFL.txt")
+file(GLOB BASS_IR_FILES "${CMAKE_SOURCE_DIR}/assets/irs/*/*.wav")
+
+if(SUITE_X11)
 add_library(bass_suite MODULE
   src/clap/bass_suite_clap.cpp
   ${BASS_DSP_SOURCES}
@@ -78,11 +90,6 @@ set_target_properties(bass_suite PROPERTIES
   SUFFIX ".clap"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/clap")
 
-set(BASS_RESOURCE_FILES
-  "${CMAKE_SOURCE_DIR}/assets/fonts/Jost-ExtraBold.ttf"
-  "${CMAKE_SOURCE_DIR}/assets/fonts/OFL.txt")
-file(GLOB BASS_IR_FILES "${CMAKE_SOURCE_DIR}/assets/irs/*/*.wav")
-
 add_custom_target(bass_suite_bundle ALL
   COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/clap/BassSuite.resources"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${BASS_RESOURCE_FILES}
@@ -97,6 +104,7 @@ install(FILES ${BASS_RESOURCE_FILES}
         DESTINATION "${CLAP_DIR}/BassSuite.resources")
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/irs"
         DESTINATION "${CLAP_DIR}/BassSuite.resources")
+endif()  # SUITE_X11
 
 # ---------------------------------------------------------------------------
 # LV2 plugin and X11 UI
@@ -118,6 +126,7 @@ set_target_properties(bass_suite_lv2 PROPERTIES
   SUFFIX ".so"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lv2/bass-suite.lv2")
 
+if(SUITE_X11)
 add_library(bass_suite_ui MODULE
   src/ui/lv2_ui.cpp
   ${BASS_UI_SOURCES})
@@ -136,6 +145,7 @@ set_target_properties(bass_suite_ui PROPERTIES
   OUTPUT_NAME "bass_suite_ui"
   SUFFIX ".so"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lv2/bass-suite.lv2")
+endif()  # SUITE_X11
 
 # Metadata is generated from params.hpp/presets.hpp.
 add_executable(bass_ttl_gen tools/gen_ttl.cpp)
@@ -145,6 +155,11 @@ target_compile_features(bass_ttl_gen PRIVATE cxx_std_20)
 add_custom_target(bass_lv2_ttl ALL
   COMMAND $<TARGET_FILE:bass_ttl_gen> --root "${CMAKE_SOURCE_DIR}"
   DEPENDS bass_ttl_gen)
+set(BASS_LV2_BUNDLE_DEPS bass_suite_lv2 bass_lv2_ttl ${BASS_IR_FILES})
+if(SUITE_X11)
+  list(APPEND BASS_LV2_BUNDLE_DEPS bass_suite_ui)
+endif()
+
 add_custom_target(bass_lv2_bundle ALL
   COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/lv2/bass-suite.lv2"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -155,10 +170,14 @@ add_custom_target(bass_lv2_bundle ALL
   COMMAND ${CMAKE_COMMAND} -E copy_directory
           "${CMAKE_SOURCE_DIR}/assets/irs"
           "${CMAKE_BINARY_DIR}/lv2/bass-suite.lv2/irs"
-  DEPENDS bass_suite_lv2 bass_suite_ui bass_lv2_ttl ${BASS_IR_FILES})
+  DEPENDS ${BASS_LV2_BUNDLE_DEPS})
 
-install(TARGETS bass_suite_lv2 bass_suite_ui
+install(TARGETS bass_suite_lv2
         LIBRARY DESTINATION "${LV2_DIR}/bass-suite.lv2")
+if(SUITE_X11)
+  install(TARGETS bass_suite_ui
+          LIBRARY DESTINATION "${LV2_DIR}/bass-suite.lv2")
+endif()
 install(FILES
           "${CMAKE_SOURCE_DIR}/lv2/bass_suite.ttl"
           "${CMAKE_SOURCE_DIR}/lv2/manifest.ttl"
@@ -235,6 +254,7 @@ if(LILV_FOUND)
     COMMAND bass_lv2_host_test "${CMAKE_BINARY_DIR}/lv2/bass-suite.lv2")
 endif()
 
+if(SUITE_X11)
 add_executable(bass_clap_host_test test/clap_host_test.cpp)
 target_include_directories(bass_clap_host_test PRIVATE
   "${CMAKE_SOURCE_DIR}/src"
@@ -264,6 +284,7 @@ target_compile_definitions(bass_clap_nam_test PRIVATE
 target_compile_features(bass_clap_nam_test PRIVATE cxx_std_20)
 add_test(NAME bass_clap_nam
   COMMAND bass_clap_nam_test "$<TARGET_FILE:bass_suite>")
+endif()  # SUITE_X11
 
 add_executable(bass_tone_probe tools/bass_tone_probe.cpp)
 target_include_directories(bass_tone_probe PRIVATE "${CMAKE_SOURCE_DIR}/src")
