@@ -67,7 +67,63 @@ set(BASS_RESOURCE_FILES
   "${CMAKE_SOURCE_DIR}/assets/fonts/OFL.txt")
 file(GLOB BASS_IR_FILES "${CMAKE_SOURCE_DIR}/assets/irs/*/*.wav")
 
-if(SUITE_X11)
+if(APPLE)
+enable_language(OBJCXX)
+add_library(bass_suite MODULE
+  src/clap/bass_suite_clap.cpp
+  ${BASS_DSP_SOURCES}
+  ${BASS_UI_SOURCES}
+  src/ui/cocoa_view.mm)
+target_include_directories(bass_suite PRIVATE
+  "${CMAKE_SOURCE_DIR}/src"
+  "${CMAKE_SOURCE_DIR}/third_party/clap/include"
+  ${BASS_GUITARIX_INCLUDES}
+  ${CAIRO_INCLUDE_DIRS})
+target_compile_definitions(bass_suite PRIVATE SUITE_MACOS_COCOA=1)
+target_compile_options(bass_suite PRIVATE -fobjc-arc)
+target_link_libraries(bass_suite PRIVATE
+  PkgConfig::CAIRO PkgConfig::FREETYPE PkgConfig::SAMPLERATE nam_core
+  "-framework Cocoa" "-framework CoreGraphics" "-framework QuartzCore"
+  Threads::Threads ${CMAKE_DL_LIBS})
+target_compile_features(bass_suite PRIVATE cxx_std_20)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(bass_suite PRIVATE -Wall -Wextra -fvisibility=hidden)
+endif()
+set_target_properties(bass_suite PROPERTIES
+  PREFIX ""
+  OUTPUT_NAME "BassSuite"
+  SUFFIX ".dylib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/macos")
+
+set(BASS_CLAP_BUNDLE "${CMAKE_BINARY_DIR}/clap/BassSuite.clap")
+find_program(DYLIBBUNDLER dylibbundler)
+add_custom_target(bass_suite_bundle ALL
+  COMMAND ${CMAKE_COMMAND} -E remove_directory "${BASS_CLAP_BUNDLE}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          "${BASS_CLAP_BUNDLE}/Contents/MacOS"
+  COMMAND ${CMAKE_COMMAND} -E copy
+          "$<TARGET_FILE:bass_suite>"
+          "${BASS_CLAP_BUNDLE}/Contents/MacOS/BassSuite"
+  COMMAND ${CMAKE_COMMAND} -E copy
+          "${CMAKE_SOURCE_DIR}/packaging/macos/Info.plist"
+          "${BASS_CLAP_BUNDLE}/Contents/Info.plist"
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          "${BASS_CLAP_BUNDLE}/Contents/Resources/BassSuite.resources"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${BASS_RESOURCE_FILES}
+          "${BASS_CLAP_BUNDLE}/Contents/Resources/BassSuite.resources/"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${CMAKE_SOURCE_DIR}/assets/irs"
+          "${BASS_CLAP_BUNDLE}/Contents/Resources/BassSuite.resources/irs"
+  DEPENDS bass_suite ${BASS_RESOURCE_FILES} ${BASS_IR_FILES})
+if(DYLIBBUNDLER)
+  add_custom_command(TARGET bass_suite_bundle POST_BUILD
+    COMMAND "${DYLIBBUNDLER}" -od -b
+            -x "${BASS_CLAP_BUNDLE}/Contents/MacOS/BassSuite"
+            -d "${BASS_CLAP_BUNDLE}/Contents/Frameworks"
+            -p "@loader_path/../Frameworks")
+endif()
+install(DIRECTORY "${BASS_CLAP_BUNDLE}" DESTINATION "${CLAP_DIR}")
+elseif(SUITE_X11)
 add_library(bass_suite MODULE
   src/clap/bass_suite_clap.cpp
   ${BASS_DSP_SOURCES}
@@ -104,7 +160,7 @@ install(FILES ${BASS_RESOURCE_FILES}
         DESTINATION "${CLAP_DIR}/BassSuite.resources")
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets/irs"
         DESTINATION "${CLAP_DIR}/BassSuite.resources")
-endif()  # SUITE_X11
+endif()  # APPLE / SUITE_X11
 
 # ---------------------------------------------------------------------------
 # LV2 plugin and X11 UI
