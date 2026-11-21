@@ -155,6 +155,11 @@ target_add_auv2_wrapper(TARGET bass_suite_auv2
   SUBTYPE_CODE "BsSu"
   INSTRUMENT_TYPE "aufx"
   MACOS_EMBEDDED_CLAP_LOCATION "${BASS_CLAP_BUNDLE}")
+# The AUv2 build helper loads the CLAP bundle to read its metadata, and
+# clap-wrapper only orders it after the CLAP library -- not after our bundle
+# target, whose POST_BUILD runs dylibbundler over the same bundle.  Without
+# this the helper can dlopen a bundle that is being rewritten (SIGSEGV).
+add_dependencies(bass_suite_auv2-build-helper bass_suite_bundle)
 set_target_properties(bass_suite_auv2 PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/au")
 
