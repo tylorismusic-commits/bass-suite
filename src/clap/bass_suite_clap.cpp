@@ -443,19 +443,6 @@ struct Plugin {
   std::vector<float> monoRight;
 };
 
-const clap_plugin_descriptor_t kDescriptor = {
-    CLAP_VERSION,
-    kPluginId,
-    kPluginName,
-    kVendor,
-    "https://github.com/tylorismusic-commits/bass-suite",
-    "",
-    "",
-    kVersion,
-    "Four bass amps, a cab section, compressor, drive and a NAM capture page in one plugin.",
-    nullptr,
-};
-
 const char* const kFeatures[] = {CLAP_PLUGIN_FEATURE_AUDIO_EFFECT,
                                  CLAP_PLUGIN_FEATURE_STEREO, nullptr};
 
@@ -760,6 +747,19 @@ void paramsFlush(const clap_plugin_t* p, const clap_input_events_t* in,
 const clap_plugin_params_t kParamsExt = {
     paramsCount, paramsInfo, paramsValue, paramsValueToText, paramsTextToValue,
     paramsFlush,
+};
+
+const clap_plugin_descriptor_t kDescriptor = {
+    CLAP_VERSION,
+    kPluginId,
+    kPluginName,
+    kVendor,
+    "https://github.com/tylorismusic-commits/bass-suite",
+    "",
+    "",
+    kVersion,
+    "Four bass amps, a cab section, compressor, drive and a NAM capture page in one plugin.",
+    kFeatures,
 };
 
 // --- State ------------------------------------------------------------------
