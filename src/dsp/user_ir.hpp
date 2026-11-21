@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "dsp/atomic_shared.hpp"
+
 #include <algorithm>
 #include <atomic>
 #include <cctype>
@@ -350,7 +352,7 @@ private:
   float sr_ = 48000.0f;
   std::thread thread_;
   std::atomic<bool> quit_{true};
-  std::atomic<std::shared_ptr<const UserIrBank>> bank_;
+  AtomicSharedPtr<const UserIrBank> bank_;
   std::vector<Stamp> stamps_;
 };
 

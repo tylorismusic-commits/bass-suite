@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "dsp/atomic_shared.hpp"
+
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -144,7 +146,7 @@ private:
   std::atomic<bool> reload_{false};
   std::atomic<bool> fail_{false};
   std::thread thread_;
-  std::atomic<std::shared_ptr<NamDSP>> model_;
+  AtomicSharedPtr<NamDSP> model_;
   int loadedIndex_ = -1;
   std::string loadedPath_;
   double loadedRate_ = 0.0;

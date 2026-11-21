@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "dsp/atomic_shared.hpp"
+
 #include <algorithm>
 #include <atomic>
 #include <cmath>
@@ -984,9 +986,9 @@ private:
   Biquad outHighMidL_, outHighMidR_, outHighL_, outHighR_;
   Biquad outHpL_, outHpR_, outLpL_, outLpR_;
   const CabIR* activeCab_ = nullptr;
-  std::atomic<std::shared_ptr<const UserIrBank>> userBankPending_;
+  AtomicSharedPtr<const UserIrBank> userBankPending_;
   std::shared_ptr<const UserIrBank> activeUserBank_;
-  std::atomic<std::shared_ptr<NamDSP>> namPending_;
+  AtomicSharedPtr<NamDSP> namPending_;
   std::shared_ptr<NamDSP> activeNam_;
   HighPass2 dcPreL_;
   HighPass2 dcPreR_;
