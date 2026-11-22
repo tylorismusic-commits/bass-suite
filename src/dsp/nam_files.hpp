@@ -9,18 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "user_dirs.hpp"
+
 namespace bass {
 
 inline std::string userNamDir() {
-  const char* xdg = std::getenv("XDG_DATA_HOME");
-  if (xdg && *xdg) {
-    return std::string(xdg) + "/bass-suite/nam";
-  }
-  const char* home = std::getenv("HOME");
-  if (home && *home) {
-    return std::string(home) + "/.local/share/bass-suite/nam";
-  }
-  return "bass-suite/nam";
+  suite::ensureDirs(suite::dataDir("BassSuite", "bass-suite") + "/nam");
+  return suite::dataDir("BassSuite", "bass-suite") + "/nam";
 }
 
 inline bool isNamName(const std::string& name) {

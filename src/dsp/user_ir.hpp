@@ -11,6 +11,8 @@
 #include "dsp/atomic_shared.hpp"
 
 #include <algorithm>
+
+#include "user_dirs.hpp"
 #include <atomic>
 #include <cctype>
 #include <chrono>
@@ -47,15 +49,10 @@ struct UserIrBank {
 };
 
 inline std::string userIrDir() {
-  const char* xdg = std::getenv("XDG_DATA_HOME");
-  if (xdg && *xdg) {
-    return std::string(xdg) + "/bass-suite/irs/user";
-  }
-  const char* home = std::getenv("HOME");
-  if (home && *home) {
-    return std::string(home) + "/.local/share/bass-suite/irs/user";
-  }
-  return "bass-suite/irs/user";
+  const std::string dir =
+      suite::dataDir("BassSuite", "bass-suite") + "/irs/user";
+  suite::ensureDirs(dir);
+  return dir;
 }
 
 inline bool isWavName(const std::string& name) {

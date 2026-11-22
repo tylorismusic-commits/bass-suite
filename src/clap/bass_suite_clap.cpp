@@ -110,6 +110,13 @@ public:
     if (!cocoa_) {
       panel_.loadFont(bundleResourceDir());
       cocoa_ = std::make_unique<CocoaView>();
+      // Dropping a capture, IR or preset on the editor does the same thing as
+      // the X11 drag target: import it into the user folder and rescan.
+      cocoa_->onFilesDropped = [this](const std::vector<std::string>& paths) {
+        for (const auto& path : paths) {
+          panel_.importDroppedFile(shared_, state_, path);
+        }
+      };
       cocoa_->setContent(&panel_, &shared_, &state_);
     }
     if (parent) cocoa_->attach(parent);
