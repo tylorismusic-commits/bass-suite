@@ -13,6 +13,12 @@
 namespace suite {
 
 inline std::string dataDir(const char* product, const char* legacy) {
+  // An explicit XDG_DATA_HOME wins everywhere; the tests and portable setups
+  // use it to point the plug-in at a scratch directory.
+  const char* xdg = std::getenv("XDG_DATA_HOME");
+  if (xdg && *xdg) {
+    return std::string(xdg) + "/" + legacy;
+  }
 #ifdef __APPLE__
   const char* home = std::getenv("HOME");
   if (home && *home) {
@@ -27,10 +33,6 @@ inline std::string dataDir(const char* product, const char* legacy) {
     return modern;
   }
 #else
-  const char* xdg = std::getenv("XDG_DATA_HOME");
-  if (xdg && *xdg) {
-    return std::string(xdg) + "/" + legacy;
-  }
   const char* home = std::getenv("HOME");
   if (home && *home) {
     return std::string(home) + "/.local/share/" + legacy;
