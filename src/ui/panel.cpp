@@ -1819,7 +1819,7 @@ void Panel::drawCabPage(cairo_t* cr, const Shared& shared,
   cairo_stroke(cr);
   text(cr, "USER IR FILES", 76, kUserBoxY + 20, 11, 0, skin.legend.r,
        skin.legend.g, skin.legend.b);
-  text(cr, userIrDir().c_str(), 76, kUserBoxY + 35, 8, 0, skin.legendDim.r,
+  text(cr, suite::prettyPath(userIrDir()).c_str(), 76, kUserBoxY + 35, 8, 0, skin.legendDim.r,
        skin.legendDim.g, skin.legendDim.b);
   roundRect(cr, kUserBoxX + kUserBoxW - 94, kUserBoxY + 10, 82, 20, 3);
   setRgb(cr, mix(skin.btnOff, {1, 1, 1}, 0.06));
@@ -2773,7 +2773,7 @@ void Panel::drawNamPage(cairo_t* cr, const Shared& shared,
   cairo_stroke(cr);
   text(cr, "NAM MODELS", 76, kUserBoxY + 20, 11, 0, skin.legend.r,
        skin.legend.g, skin.legend.b);
-  text(cr, userNamDir().c_str(), 76, kUserBoxY + 35, 8, 0, skin.legendDim.r,
+  text(cr, suite::prettyPath(userNamDir()).c_str(), 76, kUserBoxY + 35, 8, 0, skin.legendDim.r,
        skin.legendDim.g, skin.legendDim.b);
   roundRect(cr, kUserBoxX + kUserBoxW - 94, kUserBoxY + 10, 82, 20, 3);
   setRgb(cr, mix(skin.btnOff, {1, 1, 1}, 0.06));

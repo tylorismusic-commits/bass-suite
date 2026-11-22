@@ -41,6 +41,19 @@ inline std::string dataDir(const char* product, const char* legacy) {
   return legacy;
 }
 
+// "~"-abbreviated path for the UI: the macOS Application Support path is too
+// long to draw in full.
+inline std::string prettyPath(const std::string& path) {
+  const char* home = std::getenv("HOME");
+  if (home && *home) {
+    const std::string prefix(home);
+    if (path.size() > prefix.size() && path.compare(0, prefix.size(), prefix) == 0) {
+      return "~" + path.substr(prefix.size());
+    }
+  }
+  return path;
+}
+
 // Creates the directories a plug-in writes into, so a fresh install has a
 // folder to drop captures and IRs into.
 inline void ensureDirs(const std::string& dir) {
