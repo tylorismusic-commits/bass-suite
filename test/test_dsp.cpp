@@ -499,6 +499,66 @@ int main() {
     }
   }
 
+  // Octave on a bright low note: a fixed pre-filter passes the second and
+  // third harmonics, and on a low B those give the divider extra zero
+  // crossings, so the pedal jumped between the sub and the fundamental (or
+  // produced nothing usable).  The tracked pre-filter has to leave one
+  // crossing per cycle, so the output energy sits at half the input note.
+  {
+    auto subRatio = [](double hz) {
+      bass::OctavePedal oct;
+      oct.prepare(48000.0f);
+      bass::Controls c;
+      c.octOn = true;
+      c.octLevel = 1.0f;
+      c.octDry = 0.0f;
+      c.octTone = 0.5f;
+      oct.setControls(c);
+      const int n = 72000;  // 1.5 s
+      std::vector<float> out;
+      const double amps[8] = {1.0, 0.85, 0.55, 0.38, 0.28, 0.2, 0.16, 0.12};
+      for (int i = 0; i < n; ++i) {
+        const double t = i / 48000.0;
+        double sum = 0.0;
+        for (int h = 1; h <= 8; ++h) {
+          sum += amps[h - 1] * std::sin(2.0 * 3.14159265358979 * hz * h * t);
+        }
+        const double env = std::min(1.0, t / 0.003) * std::exp(-t / 1.2);
+        float l = static_cast<float>(0.10 * sum * env);
+        float r = l;
+        oct.process(l, r);
+        out.push_back(l);
+      }
+      auto mag = [&](const std::vector<float>& x, int start, int frames, double f) {
+        double re = 0.0, im = 0.0;
+        for (int i = 0; i < frames; ++i) {
+          const double hann = 0.5 - 0.5 * std::cos(2.0 * 3.14159265358979 * i / frames);
+          const double w = 2.0 * 3.14159265358979 * f * i / 48000.0;
+          re += x[static_cast<size_t>(start + i)] * hann * std::cos(w);
+          im -= x[static_cast<size_t>(start + i)] * hann * std::sin(w);
+        }
+        return std::sqrt(re * re + im * im) / frames;
+      };
+      double worst = 1.0e9;
+      for (int k = 0; k < 4; ++k) {
+        const int start = 9600 + k * 12000;
+        const double sub = mag(out, start, 9600, hz / 2.0);
+        const double fund = mag(out, start, 9600, hz);
+        const double ratio = fund > 1.0e-9 ? sub / fund : 1.0e9;
+        worst = std::min(worst, ratio);
+      }
+      return worst;
+    };
+    const double b0 = subRatio(30.87);
+    const double e1 = subRatio(41.20);
+    if (b0 < 5.0 || e1 < 5.0) {
+      std::fprintf(stderr,
+                   "octave is not dividing on low notes: B0 ratio %.1f E1 ratio %.1f\n",
+                   b0, e1);
+      return 1;
+    }
+  }
+
   // Output EQ and filters: a high HPF cuts the low end, a low LPF cuts the
   // top, and a low-shelf boost lifts 60 Hz.
   {
